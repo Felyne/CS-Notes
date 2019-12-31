@@ -29,14 +29,14 @@
 
 ## :computer: 操作系统
 
-- [计算机操作系统](https://github.com/CyC2018/CS-Notes/blob/master/notes/计算机操作系统%20-%20目录.md)
-- [Linux](https://github.com/CyC2018/CS-Notes/blob/master/notes/Linux.md)
+- [计算机操作系统](https://github.com/Felyne/CS-Notes/blob/master/notes/计算机操作系统%20-%20目录.md)
+- [Linux](https://github.com/Felyne/CS-Notes/blob/master/notes/Linux.md)
 
 ## :cloud: 网络 
 
-- [计算机网络](https://github.com/CyC2018/CS-Notes/blob/master/notes/计算机网络%20-%20目录.md)
-- [HTTP](https://github.com/CyC2018/CS-Notes/blob/master/notes/HTTP.md)
-- [Socket](https://github.com/CyC2018/CS-Notes/blob/master/notes/Socket.md)
+- [计算机网络](https://github.com/Felyne/CS-Notes/blob/master/notes/计算机网络%20-%20目录.md)
+- [HTTP](https://github.com/Felyne/CS-Notes/blob/master/notes/HTTP.md)
+- [Socket](https://github.com/Felyne/CS-Notes/blob/master/notes/Socket.md)
 
 ## :art: 面向对象
 

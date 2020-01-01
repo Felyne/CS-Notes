@@ -770,9 +770,3 @@ SET PASSWROD FOR myuser = Password('new_password');
 
 - BenForta. SQL 必知必会 [M]. 人民邮电出版社, 2013.
 
-
-
-
-
-
-<div align="center"><img width="320px" src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/githubio/公众号二维码-2.png"></img></div>

@@ -1,12 +1,15 @@
 <!-- GFM-TOC -->
-* [一、I/O 模型](#一io-模型)
+* [一、Socket](#Socket)
+    * [TCP Socket](#TCP-Socket)
+    * [UDP Socket](#UDP-Socket)
+* [二、I/O 模型](#二io-模型)
     * [阻塞式 I/O](#阻塞式-io)
     * [非阻塞式 I/O](#非阻塞式-io)
     * [I/O 复用](#io-复用)
     * [信号驱动 I/O](#信号驱动-io)
     * [异步 I/O](#异步-io)
     * [五大 I/O 模型比较](#五大-io-模型比较)
-* [二、I/O 复用](#二io-复用)
+* [三、I/O 复用](#三io-复用)
     * [select](#select)
     * [poll](#poll)
     * [比较](#比较)
@@ -17,7 +20,37 @@
 <!-- GFM-TOC -->
 
 
-# 一、I/O 模型
+# 一、Socket
+
+## TCP Socket
+
+TCP的服务端要先监听一个端口，一般是先调用bind函数，给这个Socket赋予一个IP地址和端口。当服务端有了IP和端口号，就可以调用listen函数进行监听。
+
+在内核中，为每个Socket维护两个队列。一个是已经建立了连接的队列，这时候连接三次握手已经完毕，处于established状态；一个是还没有完全建立连接的队列，这个时候三次握手还没完成，处于syn_rcvd的状态。
+
+接下来，服务端调用accept函数，拿出一个已经完成的连接进行处理。如果还没有完成，就要等着。
+
+在服务端等待的时候，客户端可以通过connect函数发起连接。先在参数中指明要连接的IP地址和端口号，然后开始发起三次握手。内核会给客户端分配一个临时的端口。一旦握手成功，服务端的accept就会返回另一个Socket。
+
+这是一个经常考的知识点，就是监听的Socket和真正用来传数据的Socket是两个，一个叫作监听Socket，一个叫作已连接Socket。
+
+连接建立成功之后，双方开始通过read和write函数来读写数据，就像往一个文件流里面写东西一样。
+
+![avatar](../img/socket/tcp_sock.jpg)
+
+
+##  UDP Socket
+
+对于UDP来讲，过程有些不一样。UDP是没有连接的，所以不需要三次握手，也就不需要调用listen和connect，但是，UDP的的交互仍然需要IP和端口号，因而也需要bind。UDP是没有维护连接状态的，因而不需要每对连接建立一组Socket，而是只要有一个Socket，就能够和多个客户端通信。也正是因为没有连接状态，每次通信的时候，都调用sendto和recvfrom，都可以传入IP地址和端口。
+
+![avatar](../img/socket/udp_sock.jpg)
+
+
+## 限制
+
+首先主要是文件描述符限制，Socket都是文件，所以首先要通过ulimit配置文件描述符的数目；另一个限制是内存，每个TCP连接都要占用一定内存，操作系统是有限的。
+
+# 二、I/O 模型
 
 一个输入操作通常包括两个阶段：
 
@@ -93,7 +126,7 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, struct sockaddr *
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/1492928105791_3.png"/> </div><br>
 
-# 二、I/O 复用
+# 三、I/O 复用
 
 select/poll/epoll 都是 I/O 多路复用的具体实现，select 出现的最早，之后是 poll，再是 epoll。
 

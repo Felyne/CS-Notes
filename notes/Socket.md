@@ -36,14 +36,14 @@ TCP的服务端要先监听一个端口，一般是先调用bind函数，给这�
 
 连接建立成功之后，双方开始通过read和write函数来读写数据，就像往一个文件流里面写东西一样。
 
-<div align="center"> <img src="img/tcp_sock.jpg"/> </div><br>
+<div align="center"> <img src="img/tcp_sock.jpg" width="600"/> </div><br>
 
 
 ##  UDP Socket
 
 对于UDP来讲，过程有些不一样。UDP是没有连接的，所以不需要三次握手，也就不需要调用listen和connect，但是，UDP的的交互仍然需要IP和端口号，因而也需要bind。UDP是没有维护连接状态的，因而不需要每对连接建立一组Socket，而是只要有一个Socket，就能够和多个客户端通信。也正是因为没有连接状态，每次通信的时候，都调用sendto和recvfrom，都可以传入IP地址和端口。
 
-<div align="center"> <img src="img/udp_sock.jpg"/> </div><br>
+<div align="center"> <img src="img/udp_sock.jpg" width="600"/> </div><br>
 
 
 ## 限制

@@ -76,7 +76,7 @@ URI 包含 URL 和 URN。
 注意：
 
 URI引入了编码机制，对于ASCII码以外的字符集和特殊字符做一个特殊的操作，把它们转换成与URI
-语义不冲突的形式。这在RFC规范里称为“escape”和“unescape”，俗称“转义。
+语义不冲突的形式。这在RFC规范里称为“escape”和“unescape”，俗称"转义"。
 
 ## 请求和响应报文
 
@@ -897,4 +897,4 @@ DELETE /idX/delete HTTP/1.1   -> Returns 404
 - [Symmetric vs. Asymmetric Encryption – What are differences?](https://www.ssl2buy.com/wiki/symmetric-vs-asymmetric-encryption-what-are-differences)
 - [Web 性能优化与 HTTP/2](https://www.kancloud.cn/digest/web-performance-http2)
 - [HTTP/2 简介](https://developers.google.com/web/fundamentals/performance/http2/?hl=zh-cn)
-
+- [一些安全相关的HTTP响应头](https://imququ.com/post/web-security-and-response-header.html)

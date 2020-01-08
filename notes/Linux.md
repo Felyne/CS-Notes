@@ -56,14 +56,21 @@
     * [grep](#grep)
     * [printf](#printf)
     * [awk](#awk)
-* [十、进程管理](#十进程管理)
+* [十、网络状态](#网络状态)
+    * [netstat](#netstat)
+    * [ss](#ss)
+
+* [十一、进程管理](#十一进程管理)
     * [查看进程](#查看进程)
     * [进程状态](#进程状态)
+    * [父子进程](#父子进程)
     * [SIGCHLD](#sigchld)
     * [wait()](#wait)
     * [waitpid()](#waitpid)
     * [孤儿进程](#孤儿进程)
     * [僵尸进程](#僵尸进程)
+    * [proc](#proc)
+    * [OOM](#OOM)
 * [参考资料](#参考资料)
 <!-- GFM-TOC -->
 
@@ -343,13 +350,33 @@ inode 具有以下特点：
 
 inode 中记录了文件内容所在的 block 编号，但是每个 block 非常小，一个大文件随便都需要几十万的 block。而一个 inode 大小有限，无法直接引用这么多 block 编号。因此引入了间接、双间接、三间接引用。间接引用让 inode 记录的引用 block 块记录引用信息。
 
+表面上，用户通过文件名，打开文件。实际上，系统内部这个过程分成三步：首先，系统找到这个文件名对应的inode号码；其次，通过inode号码，获取inode信息；最后，根据inode信息，找到文件数据所在的block，读出数据。
+
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/inode_with_signatures.jpg" width="600"/> </div><br>
+
+使用以下命令，可以看到文件名对应的inode号码：
+
+```shell
+ls -i a.txt
+# 或者
+stat a.txt
+```
+
+由于inode号码与文件名分离，这种机制导致了一些Unix/Linux系统特有的现象:
+- 有时，文件名包含特殊字符，无法正常删除。这时，直接删除inode节点，就能起到删除文件的作用
+- 移动文件或重命名文件，只是改变文件名，不影响inode号码
+- 打开一个文件以后，系统就以inode号码来识别这个文件，不再考虑文件名。因此，通常来说，系统无法从inode号码得知文件名
 
 ## 目录
 
-建立一个目录时，会分配一个 inode 与至少一个 block。block 记录的内容是目录下所有文件的 inode 编号以及文件名。
+目录文件的结构非常简单，就是一系列目录项（dirent）的列表。每个目录项，由两部分组成：所包含文件的文件名，以及该文件名对应的inode号码。
 
-可以看到文件的 inode 本身不记录文件名，文件名记录在目录中，因此新增文件、删除文件、更改文件名这些操作与目录的写权限有关。
+目录文件的读权限（r）和写权限（w），都是针对目录文件本身。由于目录文件内只有文件名和inode号码，所以如果只有读权限，只能获取文件名，无法获取其他信息，因为其他信息都储存在inode节点中，而读取inode节点内的信息需要目录文件的执行权限（x）。
+
+
+<div align="center"> <img src="img/liunx_dir.png" width=""/> </div><br>
+
+
 
 ## 日志
 
@@ -545,11 +572,9 @@ cp [-adfilprsu] source destination
 -f ：如果目标文件存在时，先删除目标文件
 ```
 
-### 1. 实体链接
+### 1. 实体链接(硬链接)
 
-在目录下创建一个条目，记录着文件名与 inode 编号，这个 inode 就是源文件的 inode。
-
-删除任意一个条目，文件还是存在，只要引用数量不为 0。
+多个文件名指向同一个inode号码，可以用不同的文件名访问同样的内容；对文件内容进行修改，会影响到所有文件名；但是，删除一个文件名，不影响另一个文件名的访问。这种情况就被称为"硬链接"（hard link）。没有文件名指向这个inode，系统就会回收这个inode号码，以及其所对应block区域。
 
 有以下限制：不能跨越文件系统、不能对目录进行链接。
 
@@ -560,7 +585,7 @@ cp [-adfilprsu] source destination
 34474855 -rw-r--r--. 2 root root 451 Jun 10 2014 /etc/crontab
 ```
 
-### 2. 符号链接
+### 2. 符号链接(软链接)
 
 符号链接文件保存着源文件所在的绝对路径，在读取时会定位到源文件上，可以理解为 Windows 的快捷方式。
 
@@ -1111,7 +1136,70 @@ dmtsai lines: 4 columns: 10
 dmtsai lines: 5 columns: 9
 ```
 
-# 十、进程管理
+# 十、网络状态
+
+##  netstat
+
+查看tcp各种状态(例如TIME_OUT，SYN_SEND)等的连接数
+
+```sh
+netstat -nt | awk '/^tcp/ {++state[$NF]} END {for(key in state) print key,"\t",state[key]}'
+```
+
+查看TIME_WAIT状态的连接数
+
+```sh
+netstat -nt|grep TIME_WAIT|wc -l
+```
+
+## ss
+
+Socket Statistics（ss）命令它用于显示各种有用的网络套接字信息
+
+1.列出已建立的连接
+```sh
+ss | head -n 5
+```
+2.显示监听套接字
+```sh
+# tcp的listen
+ss -lt
+# udp的listen
+ss ul
+```
+3.显示Unix套接字
+```sh
+ss -x
+```
+4.显示套接字内存使用情况
+
+-m选项可用于显示每个套接字使用的内存量
+
+```sh
+ss -ltm
+```
+
+5.基于状态的过滤器
+
+```sh
+ss -t state time-wait 
+# 统计连接数
+ss -t state established |grep -v Recv |wc -l
+```
+其他状态有:
+ syn-sent  syn-recv  fin-wait-1  fin-wait-2 closed  close-wait  last-ack  listen  closing
+
+6.根据端口号进行过滤
+```sh
+# 显示端口号为500或以下的所有侦听端口
+ss -ltn sport le 500
+# 显示端口号为80的所有侦听端口
+ss -ltn sport eq 80
+# 显示SSH源端口运行的TCP套接字
+ss -t '( sport = :ssh )'
+```
+
+# 十一、进程管理
 
 ## 查看进程
 
@@ -1122,19 +1210,19 @@ dmtsai lines: 5 columns: 9
 示例：查看自己的进程
 
 ```sh
-# ps -l
+ps -l
 ```
 
 示例：查看系统所有进程
 
 ```sh
-# ps aux
+ps aux
 ```
 
 示例：查看特定的进程
 
 ```sh
-# ps aux | grep threadx
+ps aux | grep threadx
 ```
 
 ### 2. pstree
@@ -1144,7 +1232,7 @@ dmtsai lines: 5 columns: 9
 示例：查看所有进程树
 
 ```sh
-# pstree -A
+pstree -A
 ```
 
 ### 3. top
@@ -1154,7 +1242,11 @@ dmtsai lines: 5 columns: 9
 示例：两秒钟刷新一次
 
 ```sh
-# top -d 2
+top -d 2
+```
+实例：查看某个进程的资源
+```sh
+top -p 14563
 ```
 
 ### 4. netstat
@@ -1164,7 +1256,28 @@ dmtsai lines: 5 columns: 9
 示例：查看特定端口的进程
 
 ```sh
-# netstat -anp | grep port
+netstat -anp | grep port
+```
+
+### 5. lsof
+
+列出当前系统打开文件
+
+示例：查看特定端口的进程
+
+```sh
+# -n 表示不进行IP域名反查，直接显示ip地址
+lsof -i tcp:22 -n
+```
+实例：列出占用文件的进程
+```sh
+lsof /home/mysql/
+# 可配合 +d 选项，表示/home/mysql目录及目录下的文件，不包括子目录
+```
+
+实例：列出进程打开的文件
+```sh
+lsof -p 16273
 ```
 
 ## 进程状态
@@ -1179,6 +1292,19 @@ dmtsai lines: 5 columns: 9
 <br>
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/2bab4127-3e7d-48cc-914e-436be859fb05.png" width="490px"/> </div><br>
+
+## 父子进程
+
+linux默认情况下，当进程收到不同信号，子进程的表现不同
+
+- **SIGTERM | SIGQUIT**: 比如kill $pid，进程退出，子进程不退出，其父进程变为1号进程
+
+- **SIGINT**: 比如ctrl + c，子进程也会收到信号，和进程一起退出
+
+- **SIGKILL**: 比如kill -9 $pid，信号不能被捕获和忽略，进程被杀死，子进程不退出，其父进程变为1号进程
+
+- **SIGTSTP**: 比如ctrl + z，进程被挂起(jobs命令查看)，子进程也受到影响，执行bg %N或者fg %N恢复
+
 
 ## SIGCHLD
 
@@ -1227,13 +1353,81 @@ options 参数主要有 WNOHANG 和 WUNTRACED 两个选项，WNOHANG 可以使 w
 
 ## 僵尸进程
 
-一个子进程的进程描述符在子进程退出时不会释放，只有当父进程通过 wait() 或 waitpid() 获取了子进程信息后才会释放。如果子进程退出，而父进程并没有调用 wait() 或 waitpid()，那么子进程的进程描述符仍然保存在系统中，这种进程称之为僵尸进程。
+一个进程创建子进程后，子进程退出，但是在系统进程表中还为它保留了一些退出状态的信息，如果而父进程并没有调用wait或waitpid获取子进程的状态信息，这些进程表项就将一直被占用。这个子进程之为僵死进程。
 
 僵尸进程通过 ps 命令显示出来的状态为 Z（zombie）。
 
-系统所能使用的进程号是有限的，如果产生大量僵尸进程，将因为没有可用的进程号而导致系统不能产生新的进程。
+系统进程表是一项有限资源，如果系统进程表被僵尸进程耗尽的话，系统就可能无法创建新的进程。
 
 要消灭系统中大量的僵尸进程，只需要将其父进程杀死，此时僵尸进程就会变成孤儿进程，从而被 init 进程所收养，这样 init 进程就会释放所有的僵尸进程所占有的资源，从而结束僵尸进程。
+
+为避免产生僵尸进程，采取的方式有：
+- 处理父进程的SIGCHLD信号，在信号处理函数里用wait或者waitpid等函数进行处理
+- fork两次并杀死一级子进程，令二级子进程成为孤儿进程而被init所“收养”、清理
+
+## proc
+
+/proc 文件系统是一种内核和内核模块用来向进程(process) 发送信息的机制(所以叫做/proc)。这个伪文件系统让你可以和内核内部数据结构进行交互，获取 有关进程的有用信息，在运行中(on the fly) 改变设置(通过改变内核参数)。 
+
+/proc 存在于内存之中而不是硬盘上。proc文件系统以文件的形式向用户空间提供了访问接口，这些接口可以用于在运行时获取相关部件的信息或者修改部件的行为，因而它是非常方便的一个接口。
+
+实例：查看进程的limits
+```sh
+cat /proc/$pid/limits
+```
+
+实例: 系统所有进程一共可以打开的文件数量,可以修改
+```sh
+cat /proc/sys/fs/file-max  
+```
+
+实例： 查看进程的环境变量
+```sh
+cat /proc/$pid/environ |tr "\0" '\n'  
+```
+
+实例：查看cpu信息
+```sh
+# 查看物理CPU个数
+cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l
+
+# 查看每个物理CPU中core的个数(即核数)
+cat /proc/cpuinfo| grep "cpu cores"| uniq
+
+# 查看逻辑CPU的个数
+cat /proc/cpuinfo| grep "processor"| wc -l
+```
+
+实例： 查看平均负载
+```sh
+cat /proc/loadavg
+```
+
+结果:
+```
+0.35 0.27 0.27 2/261 12000
+```
+前三个值分别代表系统1分钟、5分钟、15分钟前的平均负载  
+
+第四个值的分子是正在运行的进程数，分母为总进程数  
+
+第五个值是最近运行的进程id
+
+注：uptime, w, top 这几个命令也可以查看平均负载
+
+## OOM
+
+Linux 内核有个机制叫OOM killer(Out Of Memory killer)，该机制会监控那些占用内存过大，尤其是瞬间占用内存很快的进程，然后防止内存耗尽而自动把该进程杀掉。
+
+```sh
+sysctl vm.panic_on_oom                   //查看
+sysctl -w vm.panic_on_oom=1       //修改
+sysctl -p
+echo -17 > /proc/$PID/oom_adj     //临时关闭某个进程的oom
+vm.panic_on_oom = 1                       //1表示关闭，默认为0表示开启OOM
+egrep -i  'killed process' /var/log/messages     //查看日志
+```
+
 
 # 参考资料
 

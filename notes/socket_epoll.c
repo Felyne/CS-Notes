@@ -16,7 +16,7 @@
 #define LISTEN_PORT 33333
 #define MAX_BUF 1024
 
-// #define LEVEL_TRIGGER
+#define LEVEL_TRIGGER
 
 int setnonblocking(int sockfd);
 int events_handle_level(int epfd, struct epoll_event ev);

@@ -22,9 +22,9 @@
 
 ## :pencil2: 算法
 
-- [剑指 Offer 题解](https://github.com/CyC2018/CS-Notes/blob/master/notes/剑指%20Offer%20题解%20-%20目录.md)
-- [Leetcode 题解](https://github.com/CyC2018/CS-Notes/blob/master/notes/Leetcode%20题解%20-%20目录.md)
-- [算法](https://github.com/CyC2018/CS-Notes/blob/master/notes/算法%20-%20目录.md)
+- [剑指 Offer 题解](https://github.com/Felyne/CS-Notes/blob/master/notes/剑指%20Offer%20题解%20-%20目录.md)
+- [Leetcode 题解](https://github.com/Felyne/CS-Notes/blob/master/notes/Leetcode%20题解%20-%20目录.md)
+- [算法](https://github.com/Felyne/CS-Notes/blob/master/notes/算法%20-%20目录.md)
 - [笔试面试题库](https://www.nowcoder.com/contestRoom?from=cyc_github)
 
 ## :computer: 操作系统
@@ -40,16 +40,16 @@
 
 ## :art: 面向对象
 
-- [面向对象思想](https://github.com/CyC2018/CS-Notes/blob/master/notes/面向对象思想.md)
-- [设计模式](https://github.com/CyC2018/CS-Notes/blob/master/notes/设计模式%20-%20目录.md)
+- [面向对象思想](https://github.com/Felyne/CS-Notes/blob/master/notes/面向对象思想.md)
+- [设计模式](https://github.com/Felyne/CS-Notes/blob/master/notes/设计模式%20-%20目录.md)
 
 ## :floppy_disk: 数据库
 
-- [数据库系统原理](https://github.com/CyC2018/CS-Notes/blob/master/notes/数据库系统原理.md)
-- [SQL](https://github.com/CyC2018/CS-Notes/blob/master/notes/SQL.md)
-- [Leetcode-Database 题解](https://github.com/CyC2018/CS-Notes/blob/master/notes/Leetcode-Database%20题解.md)
-- [MySQL](https://github.com/CyC2018/CS-Notes/blob/master/notes/MySQL.md)
-- [Redis](https://github.com/CyC2018/CS-Notes/blob/master/notes/Redis.md)
+- [数据库系统原理](https://github.com/Felyne/CS-Notes/blob/master/notes/数据库系统原理.md)
+- [SQL](https://github.com/Felyne/CS-Notes/blob/master/notes/SQL.md)
+- [Leetcode-Database 题解](https://github.com/Felyne/CS-Notes/blob/master/notes/Leetcode-Database%20题解.md)
+- [MySQL](https://github.com/Felyne/CS-Notes/blob/master/notes/MySQL.md)
+- [Redis](https://github.com/Felyne/CS-Notes/blob/master/notes/Redis.md)
 
 ## :coffee: Java
 
@@ -70,15 +70,15 @@
 
 ## :wrench: 工具 
 
-- [Git](https://github.com/CyC2018/CS-Notes/blob/master/notes/Git.md)
-- [Docker](https://github.com/CyC2018/CS-Notes/blob/master/notes/Docker.md)
-- [构建工具](https://github.com/CyC2018/CS-Notes/blob/master/notes/构建工具.md)
-- [正则表达式](https://github.com/CyC2018/CS-Notes/blob/master/notes/正则表达式.md)
+- [Git](https://github.com/Felyne/CS-Notes/blob/master/notes/Git.md)
+- [Docker](https://github.com/Felyne/CS-Notes/blob/master/notes/Docker.md)
+- [构建工具](https://github.com/Felyne/CS-Notes/blob/master/notes/构建工具.md)
+- [正则表达式](https://github.com/Felyne/CS-Notes/blob/master/notes/正则表达式.md)
 
 ## :watermelon: 编码实践 
 
-- [代码可读性](https://github.com/CyC2018/CS-Notes/blob/master/notes/代码可读性.md)
-- [代码风格规范](https://github.com/CyC2018/CS-Notes/blob/master/notes/代码风格规范.md)
+- [代码可读性](https://github.com/Felyne/CS-Notes/blob/master/notes/代码可读性.md)
+- [代码风格规范](https://github.com/Felyne/CS-Notes/blob/master/notes/代码风格规范.md)
 
 ## :memo: 后记
 

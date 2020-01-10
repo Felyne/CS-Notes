@@ -237,7 +237,27 @@ func deleteDuplicates(head *ListNode) *ListNode {
 }
 ```
 
-#  5. 删除链表的倒数第 n 个节点
+# 5. 环形链表
+
+141\. Linked List Cycle (Easy)  
+[Leetcode](https://leetcode.com/problems/linked-list-cycle/) / [力扣](https://leetcode-cn.com/problems/linked-list-cycle/)
+```go
+func hasCycle(head *ListNode) bool {
+  if head == nil {
+      return false
+  }
+  fast, slow := head, head
+  for fast != nil && fast.Next != nil {
+      fast = fast.Next.Next
+      slow = slow.Next
+      if fast == slow {
+          return true
+      }
+  }
+  return false
+}
+```
+#  6. 删除链表的倒数第 n 个节点
 
 19\. Remove Nth Node From End of List (Medium)  
 [Leetcode](https://leetcode.com/problems/remove-nth-node-from-end-of-list/description/) / [力扣](https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/description/)
@@ -308,7 +328,7 @@ func removeNthFromEnd(head *ListNode, n int) *ListNode {
 ```
 
 
-#  6. 交换链表中的相邻结点
+#  7. 交换链表中的相邻结点
 
 24\. Swap Nodes in Pairs (Medium)
 
@@ -340,6 +360,7 @@ public ListNode swapPairs(ListNode head) {
 递归(golang)
 ```go
 func swapPairs(head *ListNode) *ListNode {
+    // 递归终止条件
     if head == nil || head.Next == nil {
         return head
     }
@@ -349,8 +370,24 @@ func swapPairs(head *ListNode) *ListNode {
     return next
 }
 ```
-
-#  7. 链表求和
+迭代(golang)
+```go
+func swapPairs(head *ListNode) *ListNode {
+    pre := new(ListNode)
+    pre.Next = head
+    temp := pre
+    for temp.Next != nil && temp.Next.Next != nil {
+        start, end := temp.Next, temp.Next.Next
+        start.Next = end.Next
+        end.Next = start
+        temp.Next = end
+        temp = start
+    }
+    return pre.Next
+}
+```
+    
+#  8. 链表求和
 
 445\. Add Two Numbers II (Medium)
 
@@ -391,7 +428,62 @@ private Stack<Integer> buildStack(ListNode l) {
 }
 ```
 
-#  8. 回文链表
+golang
+```go
+
+func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
+    s1, s2 := buildStack(l1), buildStack(l2)
+    head := &ListNode{}
+    carry := 0
+    for (!s1.IsEmpty() || !s2.IsEmpty() || carry != 0) {
+        x, _ := s1.Pop()
+        y, _ := s2.Pop()
+        sum := x + y + carry
+        node := &ListNode{Val: sum % 10}
+        node.Next = head.Next
+		head.Next = node
+        carry = sum / 10
+    }
+    return head.Next
+}
+
+
+func buildStack(l *ListNode) *Stack {
+    s := &Stack{}
+    for l != nil {
+        s.Push(l.Val)
+        l = l.Next
+    }
+    return s
+}
+
+type Stack []int
+
+func (s *Stack) Push(v ...int) {
+	*s = append(*s, v...)
+}
+
+func (s *Stack) Pop() (int, bool) {
+    length := len(*s)
+	if length <= 0 {
+		return 0, false
+	}
+	res := (*s)[length-1]
+	*s = (*s)[0 : length-1]
+	return res, true
+}
+
+
+func (s *Stack) IsEmpty() bool {
+	if len(*s) > 0 {
+		return false
+	}
+	return true
+}
+
+```
+
+#  9. 回文链表
 
 234\. Palindrome Linked List (Easy)
 
@@ -442,7 +534,7 @@ private boolean isEqual(ListNode l1, ListNode l2) {
 }
 ```
 
-#  9. 分隔链表
+#  10. 分隔链表
 
 725\. Split Linked List in Parts(Medium)
 
@@ -484,7 +576,7 @@ public ListNode[] splitListToParts(ListNode root, int k) {
 }
 ```
 
-#  10. 链表元素按奇偶聚集
+#  11. 链表元素按奇偶聚集
 
 328\. Odd Even Linked List (Medium)
 

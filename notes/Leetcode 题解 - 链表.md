@@ -60,7 +60,25 @@ public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
     return l1;
 }
 ```
-
+golang
+```go
+func getIntersectionNode(headA, headB *ListNode) *ListNode {
+    l1, l2 := headA, headB
+    for l1 != l2 {
+        if l1 == nil {
+            l1 = headB
+        } else {
+            l1 = l1.Next
+        }
+        if l2 == nil {
+            l2 = headA
+        } else {
+            l2 = l2.Next
+        }
+    }
+    return l1
+}
+```
 如果只是判断是否存在交点，那么就是另一个问题，即 [编程之美 3.6]() 的问题。有两种解法：
 
 - 把第一个链表的结尾连接到第二个链表的开头，看第二个链表是否存在环；
@@ -101,6 +119,27 @@ public ListNode reverseList(ListNode head) {
     return newHead.next;
 }
 ```
+golang
+```go
+/**
+ * Definition for singly-linked list.
+ * type ListNode struct {
+ *     Val int
+ *     Next *ListNode
+ * }
+ */
+func reverseList(head *ListNode) *ListNode {
+    var pre *ListNode = nil
+    cur := head
+    for cur != nil {
+        nextTmp := cur.Next
+        cur.Next= pre
+        pre = cur
+        cur = nextTmp
+    }
+    return pre
+}
+```
 
 #  3. 归并两个有序的链表
 
@@ -119,6 +158,36 @@ public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
         l2.next = mergeTwoLists(l1, l2.next);
         return l2;
     }
+}
+```
+golang
+```go
+/**
+ * Definition for singly-linked list.
+ * type ListNode struct {
+ *     Val int
+ *     Next *ListNode
+ * }
+ */
+func mergeTwoLists(l1 *ListNode, l2 *ListNode) *ListNode {
+     newHead := new(ListNode )
+    cur := newHead
+    for l1 != nil && l2 != nil {
+        if l1.Val <= l2.Val {
+            cur.Next = l1
+            l1 = l1.Next
+        } else {
+            cur.Next = l2
+            l2 = l2.Next
+        }
+        cur = cur.Next
+    }
+    if l1 != nil {
+        cur.Next = l1
+    } else if l2 != nil {
+        cur.Next = l2
+    }
+    return newHead.Next
 }
 ```
 
@@ -140,17 +209,44 @@ public ListNode deleteDuplicates(ListNode head) {
     return head.val == head.next.val ? head.next : head;
 }
 ```
+递归(golang)
+```go
+func deleteDuplicates(head *ListNode) *ListNode {
+    if head == nil || head.Next == nil {
+        return head
+    }
+    head.Next = deleteDuplicates(head.Next)
+    if head.Val == head.Next.Val {
+        return head.Next
+    }
+    return head
+}
+```
+迭代(golang)
+```go
+func deleteDuplicates(head *ListNode) *ListNode {
+    cur := head
+    for cur != nil && cur.Next != nil {
+        if cur.Val == cur.Next.Val {
+            cur.Next = cur.Next.Next
+        } else {
+            cur = cur.Next
+        }
+    }
+    return head
+}
+```
 
 #  5. 删除链表的倒数第 n 个节点
 
-19\. Remove Nth Node From End of List (Medium)
-
+19\. Remove Nth Node From End of List (Medium)  
 [Leetcode](https://leetcode.com/problems/remove-nth-node-from-end-of-list/description/) / [力扣](https://leetcode-cn.com/problems/remove-nth-node-from-end-of-list/description/)
 
 ```html
 Given linked list: 1->2->3->4->5, and n = 2.
 After removing the second node from the end, the linked list becomes 1->2->3->5.
 ```
+n 是保证有效的  
 
 ```java
 public ListNode removeNthFromEnd(ListNode head, int n) {
@@ -168,6 +264,49 @@ public ListNode removeNthFromEnd(ListNode head, int n) {
     return head;
 }
 ```
+ 两次遍历算法
+```go
+// 时间复杂度：O(L)
+// 该算法对列表进行了两次遍历，首先计算了列表的长度 L 其次找到第 (L - n)个结点。 操作执行了 2L-n 步，时间复杂度为 O(L)
+
+func removeNthFromEnd(head *ListNode, n int) *ListNode {
+    dummy := new(ListNode)
+    dummy.Next = head
+    length := 0
+    first := head
+    for first != nil {
+        length ++
+        first = first.Next
+    }
+    // 要删除的是第L-n+1个结点，先找到L-n这个结点
+     length -= n;
+    first = dummy;
+    for length > 0 {
+        length --
+        first = first.Next
+    }
+    first.Next = first.Next.Next
+    return dummy.Next
+}
+```
+一次遍历
+```go
+func removeNthFromEnd(head *ListNode, n int) *ListNode {
+    dummy := new(ListNode)
+    dummy.Next = head
+    first, second := dummy, dummy
+    for i := 0; i < n+1; i++ {
+        first = first.Next
+    }
+    for first != nil {
+        first = first.Next
+        second = second.Next
+    }
+    second.Next = second.Next.Next
+    return dummy.Next
+}
+```
+
 
 #  6. 交换链表中的相邻结点
 
@@ -196,6 +335,18 @@ public ListNode swapPairs(ListNode head) {
         pre = l1;
     }
     return node.next;
+}
+```
+递归(golang)
+```go
+func swapPairs(head *ListNode) *ListNode {
+    if head == nil || head.Next == nil {
+        return head
+    }
+    next := head.Next
+    head.Next = swapPairs(next.Next)
+    next.Next = head
+    return next
 }
 ```
 

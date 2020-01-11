@@ -54,6 +54,58 @@ public int maxDepth(TreeNode root) {
     return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
 }
 ```
+递归(golang)
+```go
+func maxDepth(root *TreeNode) int {
+    if root == nil {
+        return 0
+    }
+    d1 := maxDepth(root.Left)
+    d2 := maxDepth(root.Right)
+    if d1 > d2 {
+        return d1 +1
+    }
+    return d2 + 1
+}
+```
+非递归(golang)
+```go
+// 借助队列，在进行按层遍历时，size为每层的节点数
+// 层数加1的同时把该层的节点排空，同时把左右节点进队列
+// 创一个队列来存储所有没有被遍历过的节点。开始的时候，只有根节点在这个队列里面。
+// 只要这个队列不空，就一直从队列中出队节点，然后开始遍历每一层，只要把这个一层的节点数遍历完了，层数就加1，遍历过程中再把孩子节点入队到队列。
+
+func maxDepth(root *TreeNode) int {
+   if root == nil {
+       return 0
+   }
+   depth := 0
+   queue := []*TreeNode{root}
+   for len(queue) > 0 {
+       depth++
+       size := len(queue)
+       count := 0 
+       for count < size {
+           count++
+           cur := queue[0]
+           queue = queue[1:]
+           if cur.Left != nil {
+               queue = append(queue, cur.Left)
+           }
+           if cur.Right != nil {
+               queue = append(queue, cur.Right)
+           }
+       }
+   }
+   return depth
+}
+```
+复杂度分析:
+
+时间复杂度：我们每个结点只访问一次，因此时间复杂度为 O(N)，
+其中 N 是结点的数量。  
+空间复杂度：在最糟糕的情况下，树是完全不平衡的，例如每个结点只剩下左子结点，递归将会被调用 N 次（树的高度），因此保持调用栈的存储将是 O(N)。但在最好的情况下（树是完全平衡的），树的高度将是 (log(N)。因此，在这种情况下的空间复杂度将是 (log(N))。  
+
 
 ## 2. 平衡树
 
@@ -87,7 +139,33 @@ public int maxDepth(TreeNode root) {
     return 1 + Math.max(l, r);
 }
 ```
+golang
+```go
+func isBalanced(root *TreeNode) bool {
+    maxDepth(root)
+    return result
+}
 
+var result = true
+
+func maxDepth(root *TreeNode) int {
+    if root == nil {
+        return 0
+    }
+    l := maxDepth(root.Left)
+    r := maxDepth(root.Right)
+    diff := r - l
+    maxDepth := r
+    if l > r {
+        diff = l - r
+        maxDepth = l
+   }
+    if diff > 1 {
+        result = false
+    }
+    return maxDepth + 1
+}
+```
 ## 3. 两节点的最长路径
 
 543\. Diameter of Binary Tree (Easy)
@@ -138,6 +216,50 @@ public TreeNode invertTree(TreeNode root) {
     return root;
 }
 ```
+递归(golang)
+```go
+func invertTree(root *TreeNode) *TreeNode {
+    if root == nil {
+        return root
+    }
+    invertTree(root.Left)
+    invertTree(root.Right)
+    temp := root.Left
+    root.Left = root.Right
+    root.Right = temp
+    return root
+}
+```
+迭代(golang)
+```go
+// 这个方法的思路就是，我们需要交换树中所有节点的左孩子和右孩子。
+// 因此可以创一个队列来存储所有左孩子和右孩子还没有被交换过的节点。
+// 开始的时候，只有根节点在这个队列里面。只要这个队列不空，就一直从队列中出队节点，
+// 然后互换这个节点的左右孩子节点，接着再把孩子节点入队到队列，对于其中的空节点不需要加入队列。
+//最终队列一定会空，这时候所有节点的孩子节点都被互换过了，直接返回最初的根节点就可以了
+
+func invertTree(root *TreeNode) *TreeNode {
+    if root == nil {
+        return root
+    }
+     queue:= []*TreeNode{root}
+    for len(queue) > 0 {
+        node := queue[0]
+        queue = queue[1:]
+        temp := node.Left
+        node.Left = node.Right
+        node.Right = temp
+        if node.Left != nil {
+            queue = append(queue, node.Left)
+        }
+        if node.Right != nil {
+            queue = append(queue, node.Right)
+        }
+    }
+    return root
+}
+```
+
 
 ## 5. 归并两棵树
 
@@ -173,6 +295,21 @@ public TreeNode mergeTrees(TreeNode t1, TreeNode t2) {
     return root;
 }
 ```
+递归(golang)
+```go
+func mergeTrees(t1 *TreeNode, t2 *TreeNode) *TreeNode {
+    if t1 == nil {
+        return t2
+    } 
+    if t2 == nil {
+        return t1
+    }
+    t1.Val += t2.Val
+    t1.Left = mergeTrees(t1.Left, t2.Left)
+    t1.Right = mergeTrees(t1.Right, t2.Right)
+    return t1
+}
+```
 
 ## 6. 判断路径和是否等于一个数
 
@@ -201,6 +338,20 @@ public boolean hasPathSum(TreeNode root, int sum) {
     if (root == null) return false;
     if (root.left == null && root.right == null && root.val == sum) return true;
     return hasPathSum(root.left, sum - root.val) || hasPathSum(root.right, sum - root.val);
+}
+```
+
+golang
+```go
+func hasPathSum(root *TreeNode, sum int) bool {
+    if root == nil {
+        return false
+    }
+    sum -= root.Val
+    if root.Left == nil && root.Right == nil {
+        return sum == 0
+    }
+    return hasPathSum(root.Left, sum) || hasPathSum(root.Right, sum)
 }
 ```
 

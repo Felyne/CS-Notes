@@ -132,6 +132,7 @@ func reverseList(head *ListNode) *ListNode {
     var pre *ListNode = nil
     cur := head
     for cur != nil {
+        // pre和cur不断往前推进
         nextTmp := cur.Next
         cur.Next= pre
         pre = cur
@@ -533,6 +534,41 @@ private boolean isEqual(ListNode l1, ListNode l2) {
     return true;
 }
 ```
+golang
+```go
+func isPalindrome(head *ListNode) bool {
+    if head == nil || head.Next == nil {
+        return true
+    }
+    // slow, fast用于找到中间位置
+    slow, fast := head, head
+    // pre和cur用于反转，也要不断推进
+    var pre *ListNode = nil
+    cur := head
+    for fast != nil && fast.Next != nil {
+        cur = slow
+        slow = slow.Next
+        fast = fast.Next.Next
+        cur.Next = pre
+        pre = cur
+    }
+    // 奇数个结点: fast != nil; 偶数个结点: fast == nil
+    // 所以奇数个结点要忽略中间的那个结点
+    // slow表示后半段链表
+    if fast != nil {
+        slow = slow.Next
+    }
+    for cur != nil && slow != nil {
+        if cur.Val != slow.Val {
+            return false
+        }
+        cur = cur.Next
+        slow = slow.Next
+    }
+    return true
+    
+}
+```
 
 #  10. 分隔链表
 
@@ -576,6 +612,40 @@ public ListNode[] splitListToParts(ListNode root, int k) {
 }
 ```
 
+golang
+```go
+func splitListToParts(root *ListNode, k int) []*ListNode {
+    length := 0
+    cur := root
+    for cur != nil {
+        length++
+        cur = cur.Next
+    }
+    mod := length % k
+    size := length / k
+    // 第二个参数不能用0，否则 list[i]= cur 会报错
+    list := make([]*ListNode, k, k)
+    cur = root
+    for i := 0; cur != nil && i < k; i++ {
+        list[i] = cur
+        curSize := size
+        if mod > 0 {
+            curSize++
+            mod--
+        }
+        for j := 0; j < curSize -1 ; j++ {
+            cur = cur.Next
+        }
+        // 子链表的分隔点
+        next := cur.Next
+        cur.Next = nil
+        cur = next
+    }
+    return list
+}
+
+```
+
 #  11. 链表元素按奇偶聚集
 
 328\. Odd Even Linked List (Medium)
@@ -605,9 +675,22 @@ public ListNode oddEvenList(ListNode head) {
 }
 ```
 
-
-
-
-
-
-<div align="center"><img width="320px" src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/githubio/公众号二维码-2.png"></img></div>
+golang
+```go
+func oddEvenList(head *ListNode) *ListNode {
+    if head == nil {
+        return head
+    }
+    odd := head
+    even := head.Next
+    evenHead := even
+    for even != nil && even.Next != nil {
+        odd.Next = even.Next
+        odd = odd.Next
+        even.Next = odd.Next
+        even = even.Next
+    }
+    odd.Next = evenHead
+    return head
+}
+```

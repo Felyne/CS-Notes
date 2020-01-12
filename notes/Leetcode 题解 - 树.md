@@ -477,6 +477,28 @@ private boolean isSymmetric(TreeNode t1, TreeNode t2) {
     return isSymmetric(t1.left, t2.right) && isSymmetric(t1.right, t2.left);
 }
 ```
+golang
+```go
+func isSymmetric(root *TreeNode) bool {
+    if root == nil {
+        return true
+    }
+    return isMirror(root.Left, root.Right)
+}
+
+func isMirror(t1, t2 *TreeNode) bool {
+    if t1 == nil && t2 == nil {
+        return true
+    }
+    if t1 == nil || t2 == nil {
+        return false
+    }
+    if t1.Val != t2.Val {
+        return false
+    }
+    return isMirror(t1.Left, t2.Right) && isMirror(t1.Right, t2.Left) 
+}
+```
 
 ## 10. 最小路径
 
@@ -493,6 +515,25 @@ public int minDepth(TreeNode root) {
     int right = minDepth(root.right);
     if (left == 0 || right == 0) return left + right + 1;
     return Math.min(left, right) + 1;
+}
+```
+golang
+```
+func minDepth(root *TreeNode) int {
+    if root == nil {
+        return 0
+    }
+    l := minDepth(root.Left)
+    r := minDepth(root.Right)
+    // 如果左孩子和右孩子有为空的情况，直接返回m1+m2+1
+    if l == 0 || r == 0 {
+        return l + r +1
+    }
+    // 如果都不为空，返回较小深度+1
+    if l > r {
+        return r + 1
+    }
+    return l + 1
 }
 ```
 
@@ -522,6 +563,25 @@ public int sumOfLeftLeaves(TreeNode root) {
 private boolean isLeaf(TreeNode node){
     if (node == null) return false;
     return node.left == null && node.right == null;
+}
+```
+golang
+```go
+func sumOfLeftLeaves(root *TreeNode) int {
+    if root == nil {
+        return 0
+    }
+    if isLeaf(root.Left) {
+        return root.Left.Val + sumOfLeftLeaves(root.Right)
+    }
+    return sumOfLeftLeaves(root.Left) + sumOfLeftLeaves(root.Right)
+}
+
+func isLeaf(t *TreeNode) bool {
+    if t == nil {
+        return false
+    }
+    return t.Left == nil && t.Right == nil
 }
 ```
 

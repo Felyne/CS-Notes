@@ -476,10 +476,7 @@ func (s *Stack) Pop() (int, bool) {
 
 
 func (s *Stack) IsEmpty() bool {
-	if len(*s) > 0 {
-		return false
-	}
-	return true
+	return len(*s) == 0
 }
 
 ```

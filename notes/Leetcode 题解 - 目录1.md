@@ -33,8 +33,3 @@
 - 左程云. 程序员代码面试指南[M]. 电子工业出版社, 2015.
 
 
-
-
-
-
-<div align="center"><img width="320px" src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/githubio/公众号二维码-2.png"></img></div>

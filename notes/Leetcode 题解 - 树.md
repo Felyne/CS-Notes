@@ -80,20 +80,18 @@ func maxDepth(root *TreeNode) int {
        return 0
    }
    depth := 0
-   queue := []*TreeNode{root}
-   for len(queue) > 0 {
+   nodes := []*TreeNode{root}
+   for len(nodes) > 0 {
        depth++
-       size := len(queue)
-       count := 0 
-       for count < size {
-           count++
-           cur := queue[0]
-           queue = queue[1:]
+       size := len(nodes)
+       for i := 0; i < size; i++ {
+           cur := nodes[0]
+           nodes = nodes[1:]
            if cur.Left != nil {
-               queue = append(queue, cur.Left)
+               nodes = append(nodes, cur.Left)
            }
            if cur.Right != nil {
-               queue = append(queue, cur.Right)
+               nodes = append(nodes, cur.Right)
            }
        }
    }
@@ -649,6 +647,33 @@ public List<Double> averageOfLevels(TreeNode root) {
     return ret;
 }
 ```
+golang
+```go
+func averageOfLevels(root *TreeNode) []float64 {
+    if root == nil {
+        return nil
+    }
+    var res []float64
+    queue := []*TreeNode{root}
+    for len(queue)  > 0 {
+        size := len(queue)
+        sum := 0
+        for i := 0; i < size; i++ {
+            node := queue[0]
+            queue = queue[1:]
+            sum += node.Val
+            if node.Left != nil {
+                queue = append(queue, node.Left)
+            }
+            if node.Right != nil {
+                queue = append(queue, node.Right)
+            }
+        }
+        res = append(res, float64(sum)/float64(size))
+    }
+    return res
+}
+```
 
 ## 2. 得到左下角的节点
 
@@ -681,6 +706,27 @@ public int findBottomLeftValue(TreeNode root) {
         if (root.left != null) queue.add(root.left);
     }
     return root.val;
+}
+```
+golang
+```go
+func findBottomLeftValue(root *TreeNode) int {
+    if root == nil {
+        return 0
+    }
+    queue := []*TreeNode{root}
+    node := root
+    for len(queue) > 0 {
+        node = queue[0]
+        queue = queue[1:]
+        if node.Right != nil {
+            queue = append(queue, node.Right)
+        }
+        if node.Left != nil {
+            queue = append(queue, node.Left)
+        }
+    }
+    return node.Val
 }
 ```
 
@@ -754,6 +800,62 @@ public List<Integer> preorderTraversal(TreeNode root) {
     return ret;
 }
 ```
+非递归(golang)
+```go
+func preorderTraversal(root *TreeNode) []int {
+	if root == nil {
+		return nil
+	}
+    var res []int
+    stack := &Stack{root}
+    for false == stack.IsEmpty() {
+        node := stack.Pop()
+        res = append(res, node.Val)
+        if node.Right != nil {
+            stack.Push(node.Right)
+        }
+        if node.Left != nil {
+            stack.Push(node.Left)
+        }
+    }
+    return res
+}
+
+type Stack []*TreeNode
+
+func (s *Stack) Push(v ...*TreeNode) {
+	*s = append(*s, v...)
+}
+
+func (s *Stack) Pop() *TreeNode {
+       length := len(*s)  
+	if length <= 0 {
+		return nil
+	}
+	res := (*s)[length-1]
+	*s = (*s)[0 : length-1]
+	return res
+}
+
+func (s *Stack) IsEmpty() bool {
+	return len(*s) == 0
+}
+```
+
+递归(golang)
+```go
+func preorderTraversal(root *TreeNode) []int {
+	if root == nil {
+		return nil
+	}
+	res := []int{root.Val}
+	leftVals := preorderTraversal(root.Left)
+	rightVals := preorderTraversal(root.Right)
+	res = append(res, leftVals...)
+	res = append(res, rightVals...)
+	return res
+}
+```
 
 ## 2. 非递归实现二叉树的后序遍历
 
@@ -777,6 +879,51 @@ public List<Integer> postorderTraversal(TreeNode root) {
     }
     Collections.reverse(ret);
     return ret;
+}
+```
+golang
+```go
+func postorderTraversal(root *TreeNode) []int {
+    if root == nil {
+        return nil
+    }
+    var res []int
+    stack := &Stack{root}
+    for false == stack.IsEmpty() {
+        node := stack.Pop()
+        res = append(res, node.Val)
+        if node.Left != nil {
+            stack.Push(node.Left)
+        }
+        if node.Right != nil {
+            stack.Push(node.Right)
+        }
+    }
+    res2 := make([]int, 0, len(res))
+    for i := len(res) - 1; i >= 0; i-- {
+        res2 = append(res2, res[i])
+    }
+    return res2
+}
+
+type Stack []*TreeNode
+
+func (s *Stack) Push(v ...*TreeNode) {
+	*s = append(*s, v...)
+}
+
+func (s *Stack) Pop() *TreeNode {
+       length := len(*s)  
+	if length <= 0 {
+		return nil
+	}
+	res := (*s)[length-1]
+	*s = (*s)[0 : length-1]
+	return res
+}
+
+func (s *Stack) IsEmpty() bool {
+	return len(*s) == 0
 }
 ```
 
@@ -804,7 +951,48 @@ public List<Integer> inorderTraversal(TreeNode root) {
     return ret;
 }
 ```
+golang
+```go
+// 每到一个节点 A，因为根的访问在中间，将 A 入栈。然后遍历左子树，接着访问 A，最后遍历右子树
+func inorderTraversal(root *TreeNode) []int {
+    if root == nil {
+		return nil
+	}
+    var res []int
+    stack := &Stack{}
+    cur := root
+    for cur != nil || !stack.IsEmpty() {
+        for cur != nil {
+            stack.Push(cur)
+            cur = cur.Left
+        }
+        node := stack.Pop()
+        res = append(res, node.Val)
+        cur = node.Right
+    }
+    return res
+}
 
+type Stack []*TreeNode
+
+func (s *Stack) Push(v ...*TreeNode) {
+	*s = append(*s, v...)
+}
+
+func (s *Stack) Pop() *TreeNode {
+       length := len(*s)  
+	if length <= 0 {
+		return nil
+	}
+	res := (*s)[length-1]
+	*s = (*s)[0 : length-1]
+	return res
+}
+
+func (s *Stack) IsEmpty() bool {
+	return len(*s) == 0
+}
+```
 # BST
 
 二叉查找树（BST）：根节点大于等于左子树所有节点，小于等于右子树所有节点。
@@ -852,6 +1040,23 @@ public TreeNode trimBST(TreeNode root, int L, int R) {
     return root;
 }
 ```
+golang
+```go
+func trimBST(root *TreeNode, L int, R int) *TreeNode {
+    if root == nil {
+        return nil
+    }
+    if root.Val > R {
+        return trimBST(root.Left, L, R)
+    }
+    if root.Val < L {
+        return trimBST(root.Right, L, R)
+    }
+    root.Left = trimBST(root.Left, L, R)
+    root.Right = trimBST(root.Right, L, R)
+    return root
+}
+```
 
 ## 2. 寻找二叉查找树的第 k 个元素
 
@@ -880,6 +1085,29 @@ private void inOrder(TreeNode node, int k) {
         return;
     }
     inOrder(node.right, k);
+}
+```
+中序遍历g(golang)
+```go
+func kthSmallest(root *TreeNode, k int) int {
+    inorder(root, k)
+    return val
+}
+
+var cnt = 0
+var val int
+
+func inorder(root *TreeNode, k int) {
+    if root == nil {
+        return
+    }
+    inorder(root.Left, k)
+    cnt++
+    if cnt == k {
+        val = root.Val
+        return
+    }
+    inorder(root.Right, k)
 }
 ```
 
@@ -937,6 +1165,25 @@ private void traver(TreeNode node) {
     traver(node.left);
 }
 ```
+golang
+```go
+func convertBST(root *TreeNode) *TreeNode {
+    traver(root)
+    return root
+}
+
+var sum = 0
+
+func traver(root *TreeNode) {
+    if root == nil {
+        return
+    }
+    traver(root.Right)
+    sum += root.Val
+    root.Val = sum
+    traver(root.Left)
+}
+```
 
 ## 4. 二叉查找树的最近公共祖先
 
@@ -961,6 +1208,18 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
     if (root.val > p.val && root.val > q.val) return lowestCommonAncestor(root.left, p, q);
     if (root.val < p.val && root.val < q.val) return lowestCommonAncestor(root.right, p, q);
     return root;
+}
+```
+golang
+```go
+func lowestCommonAncestor(root, p, q *TreeNode) *TreeNode {
+     if p.Val > root.Val && q.Val > root.Val {
+         return lowestCommonAncestor(root.Right, p, q)
+     }
+     if p.Val < root.Val && q.Val < root.Val {
+         return lowestCommonAncestor(root.Left, p, q)
+     }
+     return root
 }
 ```
 
@@ -1330,11 +1589,3 @@ class MapSum {
     }
 }
 ```
-
-
-
-
-
-
-
-<div align="center"><img width="320px" src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/githubio/公众号二维码-2.png"></img></div>

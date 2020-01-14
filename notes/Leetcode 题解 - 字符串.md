@@ -1,4 +1,5 @@
 <!-- GFM-TOC -->
+* [0. 字符串转整数(atoi)](#0-字符串转整数(atoi))
 * [1. 字符串循环移位包含](#1-字符串循环移位包含)
 * [2. 字符串循环移位](#2-字符串循环移位)
 * [3. 字符串中单词的翻转](#3-字符串中单词的翻转)
@@ -10,6 +11,47 @@
 * [9. 统计二进制字符串中连续 1 和连续 0 数量相同的子字符串个数](#9-统计二进制字符串中连续-1-和连续-0-数量相同的子字符串个数)
 <!-- GFM-TOC -->
 
+
+# 0. 字符串转整数(atoi)
+
+8\. String to Integer (atoi)
+
+[Leetcode](https://leetcode.com/problems/string-to-integer-atoi/submissions/) / [力扣](https://leetcode-cn.com/problems/string-to-integer-atoi/submissions/)
+
+
+```go
+
+func myAtoi(str string) int {
+    i := 0
+    for i < len(str) && str[i] == ' ' {
+        i++
+    }
+    if i == len(str) {
+        return 0
+    }
+    res := 0
+    flag := 1
+    if str[i] == '-' {
+        flag = -1
+    }
+    if str[i] == '+' || str[i] == '-' {
+        i++
+    }
+    for i < len(str) && (str[i] >= '0' && str[i] <= '9') {
+        r := str[i] - '0'
+        res = res * 10 + int(r)
+        if flag == 1 && res > math.MaxInt32 {
+            return math.MaxInt32
+        } else if flag == -1 && -res < math.MinInt32 {
+            return math.MinInt32
+        }
+        i++
+    }
+    return flag * res
+}
+
+
+```
 
 # 1. 字符串循环移位包含
 

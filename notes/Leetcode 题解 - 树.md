@@ -1330,6 +1330,23 @@ private TreeNode toBST(int[] nums, int sIdx, int eIdx){
     return root;
 }
 ```
+golang
+```go
+func sortedArrayToBST(nums []int) *TreeNode {
+    if len(nums) == 0 {
+        return nil
+    }
+
+    mid := len(nums) / 2
+    
+    left := nums[:mid]
+    right := nums[mid+1:]
+
+    node := &TreeNode{nums[mid], sortedArrayToBST(left), sortedArrayToBST(right)}
+
+    return node
+}
+```
 
 ## 7. 根据有序链表构造平衡的二叉查找树
 

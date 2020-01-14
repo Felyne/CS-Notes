@@ -38,6 +38,23 @@ public int[] twoSum(int[] nums, int target) {
     return null;
 }
 ```
+golang
+```go
+func twoSum(nums []int, target int) []int {
+    if len(nums) == 0 {
+        return nil
+    }
+    keys := make(map[int]int)
+    for k, v := range nums {
+        if _ , ok := keys[target-v]; ok {
+            return []int{keys[target-v], k}
+        } else {
+            keys[v] = k
+        }
+    }
+    return nil
+}
+```
 
 # 2. 判断数组是否含有重复元素
 

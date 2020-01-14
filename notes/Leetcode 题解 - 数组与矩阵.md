@@ -37,6 +37,22 @@ public void moveZeroes(int[] nums) {
     }
 }
 ```
+golang
+```go
+func moveZeroes(nums []int)  {
+    idx := 0
+    for _, v := range nums {
+        if v != 0 {
+            nums[idx] = v
+            idx++
+        }
+    }
+    for idx < len(nums) {
+        nums[idx] = 0
+        idx++
+    }
+}
+```
 
 # 2. 改变矩阵维度
 
@@ -92,6 +108,23 @@ public int findMaxConsecutiveOnes(int[] nums) {
     return max;
 }
 ```
+golang
+```go
+func findMaxConsecutiveOnes(nums []int) int {
+    max, cur := 0, 0
+    for _, v := range nums {
+        if v == 0 {
+            cur = 0
+        } else {
+            cur++
+        }
+        if max < cur {
+            max = cur
+        }
+    }
+    return max
+}
+```
 
 # 4. 有序矩阵查找
 
@@ -118,6 +151,26 @@ public boolean searchMatrix(int[][] matrix, int target) {
         else row++;
     }
     return false;
+}
+```
+golang
+```go
+func searchMatrix(matrix [][]int, target int) bool {
+    if matrix == nil || len(matrix) == 0 || len(matrix[0]) == 0 {
+        return false
+    }
+    m, n := len(matrix), len(matrix[0])
+    row, col := 0, n - 1
+    for row < m && col >= 0 {
+        if target == matrix[row][col] {
+            return true
+        } else if target < matrix[row][col] {
+            col--
+        } else {
+            row++
+        }
+    }
+    return false
 }
 ```
 

@@ -20,13 +20,13 @@
 
 
 ```go
-
 func myAtoi(str string) int {
-    i := 0
-    for i < len(str) && str[i] == ' ' {
+    i, n := 0, len(str)
+    for i < n && str[i] == ' ' {
         i++
     }
-    if i == len(str) {
+    // str是空字符或者内容全是空格的字符
+    if i == n {
         return 0
     }
     res := 0
@@ -37,9 +37,8 @@ func myAtoi(str string) int {
     if str[i] == '+' || str[i] == '-' {
         i++
     }
-    for i < len(str) && (str[i] >= '0' && str[i] <= '9') {
-        r := str[i] - '0'
-        res = res * 10 + int(r)
+    for i < n && (str[i] >= '0' && str[i]  <= '9') {
+        res = res * 10 + int(str[i] - '0')
         if flag == 1 && res > math.MaxInt32 {
             return math.MaxInt32
         } else if flag == -1 && -res < math.MinInt32 {
@@ -49,8 +48,6 @@ func myAtoi(str string) int {
     }
     return flag * res
 }
-
-
 ```
 
 # 1. 字符串循环移位包含

@@ -1,4 +1,5 @@
 <!-- GFM-TOC -->
+* [0. 两数相加](#0-两数相加)
 * [1. 把数组中的 0 移到末尾](#1-把数组中的-0-移到末尾)
 * [2. 改变矩阵维度](#2-改变矩阵维度)
 * [3. 找出数组中最长的连续 1](#3-找出数组中最长的连续-1)
@@ -13,6 +14,55 @@
 * [12. 分隔数组](#12-分隔数组)
 <!-- GFM-TOC -->
 
+# 0. 两数相加
+
+给出两个 非空 的数组用来表示两个非负的整数。其中，它们各自的位数是按照 逆序 的方式存储的，并且它们的每个元素只能存储 一位 数字。
+
+如果，我们将这两个数相加起来，则会返回一个新的数组来表示它们的和。
+
+您可以假设除了数字 0 之外，这两个数都不会以 0 开头。
+
+示例：
+
+输入：[2, 4, 3] + [5, 6, 4]  
+输出：[7, 0, 8]  
+原因：342 + 465 = 807  
+
+[题目改自](https://leetcode-cn.com/problems/add-two-numbers/)
+
+```go
+func addTwoNumbers(nums1, nums2 []int) []int {
+	n1, n2 := len(nums1), len(nums2)
+	if n1 == 0 {
+		return nums2
+	}
+	if n2 == 0 {
+		return nums1
+	}
+	count := n1
+	if n1 < n2 {
+		count = n2
+	}
+	res := make([]int, 0, count+1)
+	carry := 0
+	for i := 0; i < count; i++ {
+		x, y := 0, 0
+		if i < n1 {
+			x = nums1[i]
+		}
+		if i < n2 {
+			y = nums2[i]
+		}
+		sum := x + y + carry
+		carry = sum / 10
+		res = append(res, sum%10)
+	}
+	if carry > 0 {
+		res = append(res, carry)
+	}
+	return res
+}
+```
 
 # 1. 把数组中的 0 移到末尾
 

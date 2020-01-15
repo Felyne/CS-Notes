@@ -241,6 +241,46 @@ public int minPathSum(int[][] grid) {
 }
 ```
 
+二维动态规划  
+
+我们新建一个额外的 dpdp 数组，与原矩阵大小相同。在这个矩阵中，dp(i, j)dp(i,j) 表示从坐标 (i, j)(i,j) 到右下角的最小路径权值。我们初始化右下角的 dpdp 值为对应的原矩阵值，然后去填整个矩阵，对于每个元素考虑移动到右边或者下面，因此获得最小路径和我们有如下递推公式：
+
+dp(i,j)=grid(i,j)+min(dp(i+1,j),dp(i,j+1))
+
+```go
+func minPathSum(grid [][]int) int {
+    if len(grid) == 0 {
+        return 0
+    }
+    row, col := len(grid), len(grid[0]) //行数和列数
+    dp := make([][]int, row)
+    for i := range dp {
+        dp[i] = make([]int, col, col)
+    }
+    for i := row - 1; i >=0; i-- {
+        for j := col - 1; j >= 0; j-- {
+            if i == row - 1 && j != col -1 {
+                dp[i][j] = grid[i][j] + dp[i][j+1]  //最后一行，但不是最后一列，只能往右走
+            } else if j == col - 1 && i != row - 1 {
+                dp[i][j] = grid[i][j] + dp[i+1][j]  //最后一列，但不是最后一行，只能往下走
+            }  else if i != row - 1 && j != col - 1 {
+                dp[i][j] = grid[i][j] + min(dp[i+1][j], dp[i][j+1])  //不是最后一行，也不是最后一列，比较往下和往右的最短路径
+            } else {
+                dp[i][j] = grid[i][j]  //同时是最后一行和最后一列
+            }
+        }
+    }
+    return dp[0][0]  //从左上角到右下角的最短路径
+}
+
+func min(a, b int) int {
+    if a <= b {
+        return a
+    }
+    return b
+}
+```
+
 ## 2. 矩阵的总路径数
 
 62\. Unique Paths (Medium)

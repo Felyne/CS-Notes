@@ -243,7 +243,7 @@ public int minPathSum(int[][] grid) {
 
 二维动态规划  
 
-我们新建一个额外的 dpdp 数组，与原矩阵大小相同。在这个矩阵中，dp(i, j)dp(i,j) 表示从坐标 (i, j)(i,j) 到右下角的最小路径权值。我们初始化右下角的 dpdp 值为对应的原矩阵值，然后去填整个矩阵，对于每个元素考虑移动到右边或者下面，因此获得最小路径和我们有如下递推公式：
+我们新建一个额外的 dp数组，与原矩阵大小相同。在这个矩阵中，dp(i, j)表示从坐标 (i, j)到右下角的最小路径权值。我们初始化右下角的 dp 值为对应的原矩阵值，然后去填整个矩阵，对于每个元素考虑移动到右边或者下面，因此获得最小路径和我们有如下递推公式：
 
 dp(i,j)=grid(i,j)+min(dp(i+1,j),dp(i,j+1))
 
@@ -301,6 +301,27 @@ public int uniquePaths(int m, int n) {
         }
     }
     return dp[n - 1];
+}
+```
+
+动态规划:  
+dp[i][j]表示到达右下角的路径数
+```go
+func uniquePaths(m int, n int) int {
+    dp := make([][]int, m)
+    for i := range dp {
+        dp[i] = make([]int, n, n)
+    }
+    for i := m-1; i >= 0; i-- {
+        for j := n-1; j >= 0; j-- {
+            if i == m-1 || j == n-1 {
+                dp[i][j] = 1
+            }  else {
+                dp[i][j] = dp[i][j+1] + dp[i+1][j]
+            }
+        }
+    }
+    return dp[0][0]
 }
 ```
 

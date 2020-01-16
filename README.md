@@ -41,7 +41,7 @@
 ## :art: 面向对象
 
 - [面向对象思想](https://github.com/Felyne/CS-Notes/blob/master/notes/面向对象思想.md)
-- [设计模式](https://github.com/Felyne/CS-Notes/blob/master/notes/设计模式%20-%20目录.md)
+- [设计模式](https://github.com/sevenelevenlee/go-patterns)
 
 ## :floppy_disk: 数据库
 

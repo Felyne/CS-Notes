@@ -51,13 +51,13 @@
 - [MySQL](https://github.com/Felyne/CS-Notes/blob/master/notes/MySQL.md)
 - [Redis](https://github.com/Felyne/CS-Notes/blob/master/notes/Redis.md)
 
-## :coffee: Java
 
-- [Java 基础](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20基础.md)
-- [Java 容器](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20容器.md)
-- [Java 并发](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20并发.md)
-- [Java 虚拟机](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20虚拟机.md)
-- [Java I/O](https://github.com/CyC2018/CS-Notes/blob/master/notes/Java%20IO.md)
+## :coffee: Go
+
+- [Go 知识点](https://github.com/Felyne/CS-Notes/blob/master/notes/Go知识点.md)
+- [Go 语言圣经](https://books.studygolang.com/gopl-zh/)
+- [Go 语言设计与实现](https://draveness.me/golang/)
+
 
 ## :bulb: 系统设计 
 
@@ -79,15 +79,6 @@
 
 - [代码可读性](https://github.com/Felyne/CS-Notes/blob/master/notes/代码可读性.md)
 - [代码风格规范](https://github.com/Felyne/CS-Notes/blob/master/notes/代码风格规范.md)
-
-## :memo: 后记
-
-<div align="center">
-	<a href="https://www.nowcoder.com/discuss/137593?from=cyc_github"> 我的面经 </a> / <a href="https://cyc2018.github.io"> 我的简历 </a> / <a href="https://github.com/CyC2018/Markdown-Resume"> 简历模版 </a> / <a href="https://github.com/CyC2018/Job-Recommend"> 内推 </a> / <a href="https://xiaozhuanlan.com/CyC2018"> 专栏 </a> / <a href="assets/QQ2群.png"> QQ 群</a>
-	<br><br>
-    <img width="320px" src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/githubio/公众号二维码-2.png"></img>
-</div>
-
 
 
 ### 排版

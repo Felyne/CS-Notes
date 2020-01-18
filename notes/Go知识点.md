@@ -20,25 +20,6 @@
 2.反射: reflect.TypeOf(x)
 ```
 
-### 4.defer的用法
-```
-defer代码块会在函数调用链表中增加一个函数调用。这个函数调用不是普通的函数调用，而是会在函数正常返回，也就是return之后添加一个函数调用。
-
-因此，defer通常用来释放函数内部变量
-
-规则:
-1. 当defer被声明时，其参数就会被实时解析
-2. defer执行顺序为先进后出
-3. defer可以读取有名返回值
-
-用法:
-1. 释放占用的资源
-2. 捕捉处理异常
-3. 输出日志 等收尾工作
-
-注意:
-defer函数里面的参数类型是指针还是值
-```
 
 ### 5.channel的注意点
 ```
@@ -166,16 +147,158 @@ Go 语言反射的三大法则3，其中包括：
 反射实现了运行时的反射能力，能够让程序操作不同类型的对象。可以动态修改变量、判断类型是否实现了某些接口以及动态调用方法等。
 
 
+### for range
+
+对于所有的 range 循环，Go 语言都会在编译期将原切片或者数组赋值给一个新的变量 ha，在赋值的过程中就发生了拷贝，所以我们遍历的切片已经不是原始的切片变量了。  
+
+
+错误1:  
+```go
+func main() {
+	arr := []int{1, 2, 3}
+	newArr := []*int{}
+	for _, v := range arr {
+		newArr = append(newArr, &v)
+	}
+	for _, v := range newArr {
+		fmt.Println(*v)
+	}
+}
+
+$ go run main.go
+3 3 3
+```
+上面正确的做法是: 使用 &arr[i] 替代 &v  
+原因： 循环中使用的这个变量 v 会在每一次迭代被重新赋值，在赋值时也发生了拷贝   
+
+错误2:  
+
+```go
+for _, dir := range tempDirs() {
+	// dir := dir // declares inner dir, initialized to outer dir
+    os.MkdirAll(dir, 0755)
+    rmdirs = append(rmdirs, func() {
+        os.RemoveAll(dir) // NOTE: incorrect!
+    })
+}
+```
+这个问题不仅存在基于range的循环，在下面的例子中，匿名函数对循环变量i的使用也存在同样的问题
+
+错误3：  
+```go
+var rmdirs []func()
+dirs := tempDirs()
+for i := 0; i < len(dirs); i++ {
+    os.MkdirAll(dirs[i], 0755) // OK
+    rmdirs = append(rmdirs, func() {
+        os.RemoveAll(dirs[i]) // NOTE: incorrect!
+    })
+}
+```
+
+遍历字符串的过程与数组、切片和哈希表非常相似，只是在遍历时会获取字符串中索引对应的字节并将字节转换成 rune。我们在遍历字符串时拿到的值都是 rune 类型的变量。
+
+
+### select
+
+select {} 的空语句会直接阻塞当前的 Goroutine，让出当前 Goroutine 对处理器的使用权，该 Goroutine 也会进入永久休眠的状态也没有办法被其他的 Goroutine 唤醒。
+
+非空的select{} 等到 select 对应的一些 Channel 准备好之后，当前 Goroutine 就会被调度器唤醒。
+
+
+### defer
+
+```go
+
+type Test struct {
+    value int
+}
+
+func (t Test) print() {
+    println(t.value)
+}
+
+func main() {
+	test := Test{}
+	defer test.print()
+	test.value += 1
+}
+
+$ go run main.go
+0
+```
+这其实表明当 defer 调用时其实会对函数中引用的外部参数进行拷贝，所以 test.value += 1 操作并没有修改被 defer 捕获的 test 结构体，不过如果我们修改 print 函数签名的话，把结构体接收者换成指针接收者，其实结果就会稍有不同。
+
+规则:
+1. 当defer被声明时，其参数就会被实时解析
+2. defer执行顺序为先进后出
+3. defer可以读取有名返回值
+
+用法:
+1. 释放占用的资源
+2. 捕捉处理异常
+3. 输出日志 等收尾工作
+
+注意:
+defer函数里面的参数类型是指针还是值，如果是值， defer语句后面的操作不可见
+
+
+### panic 和 recover
+
+`panic` 能够改变程序的控制流，当一个函数调用执行 panic 时，它会立刻停止执行函数中其他的代码，而是会运行其中的 defer 函数，执行成功后会返回到调用方。
+
+对于上层调用方来说，调用导致 panic 的函数其实与直接调用 panic 类似，所以也会执行所有的 defer 函数并返回到它的调用方，这个过程会一直进行直到当前 Goroutine 的调用栈中不包含任何的函数，这时整个程序才会崩溃，这个『恐慌过程』不仅会被显式的调用触发，还会由于运行期间发生错误而触发。
+
+
+正确：
+```go
+func main() {
+	defer func() {
+		recover()
+	}()
+	panic("ooo")
+}
+```
+错误，照样panic:
+```go
+func main() {
+	defer recover()
+	panic("ooo")
+}
+```
+
+原因: Recover is only useful inside deferred functions
+
+现象:  
+```go
+func main() {
+	defer println("in main")
+	go func() {
+		defer println("in goroutine")
+		panic("")
+	}()
+
+	time.Sleep(1 * time.Second)
+}
+
+// in goroutine
+// panic:
+// ...
+```
+原因:  Go 语言在发生 panic 时只会执行当前协程中的 defer 函数
+
 ### 10.new和make的区别
 
-二者都是内存的分配（堆上），但是make只用于slice、map以及channel的初始化（非零值）；而new用于类型的内存分配，并且内存置为零
+make 关键字的主要作用是创建切片、哈希表和 Channel 等内置的数据结构，而 new 的主要作用是为类型申请一片内存空间，并返回指向这片内存的指针。
 
-make返回的还是这三个引用类型本身；而new返回的是指向类型的指针
+下面代码片段中的两种不同初始化方法其实是等价的，它们都会创建一个指向 int 零值的指针
+```go
+i := new(int)
 
-
-
-
+var v int
+i := &v
 ```
+
 
 10.如何（优雅的）比较两个未知结构的json
 

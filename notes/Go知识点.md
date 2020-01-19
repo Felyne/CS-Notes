@@ -208,8 +208,8 @@ select {} 的空语句会直接阻塞当前的 Goroutine，让出当前 Goroutin
 
 ## defer
 
+代码1:
 ```go
-
 type Test struct {
     value int
 }
@@ -240,8 +240,7 @@ $ go run main.go
 3. 输出日志 等收尾工作
 
 注意:
-defer函数里面的参数类型是指针还是值，如果是值， defer语句后面的操作不可见
-
+[Golang中defer、return、返回值之间执行顺序的坑](https://studygolang.com/articles/4809)
 
 ## panic 和 recover
 

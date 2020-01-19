@@ -137,6 +137,7 @@ SELECT actor_id FROM sakila.actor WHERE actor_id + 1 = 5;
 SELECT film_id, actor_ id FROM sakila.film_actor
 WHERE actor_id = 1 AND film_id = 1;
 ```
+[mysql联合索引的使用规则](https://blog.csdn.net/wdjxxl/article/details/79790421#commentBox)
 
 ### 3. 索引列的顺序
 
@@ -542,7 +543,19 @@ redo log 和 binlog 都可以用于表示事务的提交状态，而两阶段提
 
 5) 很多时候用 exists 代替 in 是一个好的选择
 
-### 10. 什么是存储过程？有哪些优缺点？
+### 10. MySQL有哪些日志？
+
+主要有5种日志文件
+1. 错误日志(error log)：记录mysql服务的启停时正确和错误的信息，还记录启动、停止、运行过程中的错误信息。
+2. 查询日志(general log)：记录建立的客户端连接和执行的语句。
+3. 二进制日志(bin log)：记录所有更改数据的语句，可用于数据复制。
+4. 慢查询日志(slow log)：记录所有执行时间超过long_query_time的所有查询或不使用索引的查询。
+5. 中继日志(relay log)：主从复制时使用的日志。
+
+除了这5种日志，在需要的时候还会创建DDL日志。
+[参考](http://blog.51cto.com/gfsunny/1566683)
+
+### 11. 什么是存储过程？有哪些优缺点？
 
     存储过程是由一些SQL语句和控制语句组成的被封装起来的过程，它驻留在数据库中，可以被客户应用程序调用，用户通过指定存储过程的名字并给定参数（如果该存储过程带有参数）来调用执行它，也可以从另一个过程或触发器调用。
 

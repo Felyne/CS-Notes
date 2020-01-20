@@ -76,6 +76,15 @@ Docker 轻量级的特点使得它很适合用于部署、维护、组合微服�
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/docker-filesystems-busyboxrw.png"/> </div><br>
 
+# 六、补充
+
+[Docker 核心技术与实现原理](https://draveness.me/docker)
+
+[Docker面试问题与解答](https://zhuanlan.zhihu.com/p/62653543)
+
+[Docker的网络模式详解](https://juejin.im/post/5c3363bf6fb9a049e2322cdb)
+
+
 # 参考资料
 
 - [DOCKER 101: INTRODUCTION TO DOCKER WEBINAR RECAP](https://blog.docker.com/2017/08/docker-101-introduction-docker-webinar-recap/)

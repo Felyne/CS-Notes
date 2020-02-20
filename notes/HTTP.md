@@ -193,7 +193,7 @@ TRACE方法多用于对HTTP链路的测试或诊断，可以显示出请求-响�
 
 -   **206 Partial Content**  ：是HTTP分块下载或断点续传的基础，在客户端发送“范围请求”、要求获取资源的
 部分数据时出现，它与200一样，也是服务器成功处理了请求，但body里的数据不是资源的全部，而是其中
-的一部分。状态码206通常还会伴随着头字段`Content--Range`，表示响应报文里body数据的具体范围，供客户端确
+的一部分。状态码206通常还会伴随着头字段`Content-Range`，表示响应报文里body数据的具体范围，供客户端确
 认，例如“Content-Range: bytes 0-99/2000”，意思是此次获取的是总计2000个字节的前100个字节
 
 
@@ -214,7 +214,7 @@ TRACE方法多用于对HTTP链路的测试或诊断，可以显示出请求-响�
 
 -   **307 Temporary Redirect**  ：类似302，但重定向后请求里的方法和实体不允许变动，含义比302更明确。
 
--   **307 Permanent Redirect**  ：类似307，不允许重定向后的请求变动，但它是301“永久重定向”的含义。
+-   **308 Permanent Redirect**  ：类似307，不允许重定向后的请求变动，但它是301“永久重定向”的含义。
 
 ## 4XX 客户端错误
 
@@ -338,6 +338,8 @@ TRACE方法多用于对HTTP链路的测试或诊断，可以显示出请求-响�
 
 - 使用“keepalive_timeout”指令，设置长连接的超时时间，如果在一段时间内连接上没有任何数据收发就主动断开连接，避免空闲连接占用系统资源。
 - 使用“keepalive_requests”指令，设置长连接上可发送的最大请求次数。比如设置成1000，那么当Nginx在这个连接上处理了1000个请求后，也会主动断开连接
+
+注意: http keepalive 和 tcp keepalive 的区别。linux 的 tcp 连接在7200s内没有数据流动就发送多次探测报文给对方，一直没收到响应，则终止连接。
 
 #### 性能优化
 
@@ -814,7 +816,7 @@ rewrite ^ https://$host$request_uri permanent;   #永久重定向
 不过有一种叫“HSTS”（HTTP严格传输安全，HTTP Strict Transport Security）的技术可以消除这种安全隐患。HTTPS服务器需要在发出的响应头里添加一个“Strict-Transport-Security”的字段，再设定一个有效期，例如：
 
 ```
-Strict-Transport-Security: max-age=15768000; includeSubDomai
+Strict-Transport-Security: max-age=15768000; includeSubDomains
 ```
 
 这相当于告诉浏览器：我这个网站必须严格使用HTTPS协议，在半年之内（182.5天）都不允许用HTTP，你以后就自己做转换吧，不要再来麻烦我了。有了“HSTS”的指示，以后浏览器再访问同样的域名的时候就会自动把URI里的“http”改成“https”直接访问安全的HTTPS网站。这样“中间人”就失去了攻击的机会，而且对于客户端来说也免去了一次跳转，加快了连接速度。

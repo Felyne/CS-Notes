@@ -137,7 +137,7 @@ int events_handle_level(int epfd, struct epoll_event ev) {
 
             return -1;
         }
-
+        // 读到末尾
         if (0 == n) {
             if (-1 == epoll_ctl(epfd, EPOLL_CTL_DEL, fd, &ev)) {
                 perror("epoll_ctl del fd failure.");
@@ -182,7 +182,7 @@ int events_handle_edge(int epfd, struct epoll_event ev) {
             }
 
         }
-
+        
         if (0 == count) {
             if (-1 == epoll_ctl(epfd, EPOLL_CTL_DEL, fd, &ev)) {
                 perror("epoll_ctl del fd failure.");

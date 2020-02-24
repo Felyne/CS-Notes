@@ -1,16 +1,21 @@
 <!-- GFM-TOC -->
 * [一、概述](#一概述)
-* [二、数据类型](#二数据类型)
+* [二、数据结构](#二数据结构)
     * [STRING](#string)
     * [LIST](#list)
     * [SET](#set)
     * [HASH](#hash)
     * [ZSET](#zset)
-* [三、数据结构](#三数据结构)
+    * [位图](#位图)
+    * [HyperLogLog](#HyperLogLog)
+    * [布隆过滤器](#布隆过滤器)
+* [三、底层结构](#三底层结构)
     * [字典](#字典)
     * [跳跃表](#跳跃表)
 * [四、使用场景](#四使用场景)
     * [计数器](#计数器)
+    * [页面UV](#页面UV)
+    * [不精确去重](#不精确去重)
     * [缓存](#缓存)
     * [查找表](#查找表)
     * [消息队列](#消息队列)
@@ -53,9 +58,9 @@ Redis 是速度非常快的非关系型（NoSQL）内存键值数据库，可以
 
 Redis 支持很多特性，例如将内存中的数据持久化到硬盘中，使用复制来扩展读性能，使用分片来扩展写性能。
 
-# 二、数据类型
+# 二、数据结构
 
-| 数据类型 | 可以存储的值 | 操作 |
+| 数据结构 | 可以存储的值 | 操作 |
 | :--: | :--: | :--: |
 | STRING | 字符串、整数或者浮点数 | 对整个字符串或者字符串的其中一部分执行操作</br> 对整数和浮点数执行自增或者自减操作 |
 | LIST | 列表 | 从两端压入或者弹出元素 </br> 对单个或者多个元素进行修剪，</br> 只保留一个范围内的元素 |
@@ -69,143 +74,291 @@ Redis 支持很多特性，例如将内存中的数据持久化到硬盘中，�
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/6019b2db-bc3e-4408-b6d8-96025f4481d6.png" width="400"/> </div><br>
 
+Redis 的字符串是动态字符串，是可以修改的字符串，内部结构实现上类似于 Java 的 ArrayList，采用预分配冗余空间的方式来减少内存的频繁分配，内部为当前字符串实际分配的空间 capacity 一般要高于实际字符串长度 len。当字符串长度小于 1M 时，扩容都是加倍现有的空间，如果超过 1M，扩容时一次只会多扩 1M 的空间。需要注意的是字符串最大长度为 512M。
+
 ```html
-> set hello world
+> set name1 codehole
 OK
-> get hello
-"world"
-> del hello
-(integer) 1
-> get hello
+> set name2 holycoder
+OK
+> mget name1 name2 name3 # 返回一个列表
+1) "codehole"
+2) "holycoder"
+3) (nil)
+> mset name1 boy name2 girl name3 unknown
+> mget name1 name2 name3
+1) "boy"
+2) "girl"
+3) "unknown"
+
+> set name codehole
+> get name
+"codehole"
+> expire name 5  # 5s 后过期
+...  # wait for 5s
+> get name
 (nil)
+
+> setex name 5 codehole  # 5s 后过期，等价于 set+expire
+> get name
+"codehole"
+... # wait for 5s
+> get name
+(nil)
+
+> setnx name codehole  # 如果 name 不存在就执行 set 创建
+(integer) 1
+> get name
+"codehole"
+> setnx name holycoder
+(integer) 0  # 因为 name 已经存在，所以 set 创建不成功
+> get name
+"codehole"  # 没有改变
+
+> set age 30
+OK
+> incr age
+(integer) 31
+> incrby age 5
+(integer) 36
+> incrby age -5
+(integer) 31
+> set codehole 9223372036854775807  # Long.Max
+OK
+> incr codehole
+(error) ERR increment or decrement would overflow
 ```
 
 ## LIST
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/fb327611-7e2b-4f2f-9f5b-38592d408f07.png" width="400"/> </div><br>
 
+Redis 的列表底层是链表(元素较少时是压缩链表，较多时是快速链表)。这意味着 list 的插入和删除操作非常快，时间复杂度为 O(1)，但是索引定位很慢，时间复杂度为 O(n)，这点让人非常意外。
+
+当列表弹出了最后一个元素之后，该数据结构自动被删除，内存被回收。
+
 ```html
-> rpush list-key item
-(integer) 1
-> rpush list-key item2
-(integer) 2
-> rpush list-key item
+> rpush books python java golang
 (integer) 3
+> llen books
+(integer) 3
+> lpop books
+"python"
+> lpop books
+"java"
+> lpop books
+"golang"
+> lpop books
+(nil)
 
-> lrange list-key 0 -1
-1) "item"
-2) "item2"
-3) "item"
-
-> lindex list-key 1
-"item2"
-
-> lpop list-key
-"item"
-
-> lrange list-key 0 -1
-1) "item2"
-2) "item"
+> rpush books python java golang
+(integer) 3
+> lindex books 1  # O(n) 慎用
+"java"
+> lrange books 0 -1  # 获取所有元素，O(n) 慎用
+1) "python"
+2) "java"
+3) "golang"
+> ltrim books 1 -1 # O(n) 慎用
+OK
+> lrange books 0 -1
+1) "java"
+2) "golang"
+> ltrim books 1 0 # 这其实是清空了整个列表，因为区间范围长度为负
+OK
+> llen books
+(integer) 0
 ```
 
 ## SET
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/cd5fbcff-3f35-43a6-8ffa-082a93ce0f0e.png" width="400"/> </div><br>
 
+Redis 的集合相当于 Java 语言里面的 HashSet，它内部的键值对是无序的唯一的。它的内部实现相当于一个特殊的字典，字典中所有的 value 都是一个值NULL。
+
+当集合中最后一个元素移除之后，数据结构自动删除，内存被回收
+
 ```html
-> sadd set-key item
+> sadd books python
 (integer) 1
-> sadd set-key item2
-(integer) 1
-> sadd set-key item3
-(integer) 1
-> sadd set-key item
+> sadd books python  #  重复
 (integer) 0
-
-> smembers set-key
-1) "item"
-2) "item2"
-3) "item3"
-
-> sismember set-key item4
-(integer) 0
-> sismember set-key item
+> sadd books java golang
+(integer) 2
+> smembers books  # 注意顺序，和插入的并不一致，因为 set 是无序的
+1) "java"
+2) "python"
+3) "golang"
+> sismember books java  # 查询某个 value 是否存在，相当于 contains(o)
 (integer) 1
-
-> srem set-key item2
-(integer) 1
-> srem set-key item2
+> sismember books rust
 (integer) 0
-
-> smembers set-key
-1) "item"
-2) "item3"
+> scard books  # 获取长度相当于 count()
+(integer) 3
+> spop books  # 弹出一个
+"java"
 ```
 
 ## HASH
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/7bd202a7-93d4-4f3a-a878-af68ae25539a.png" width="400"/> </div><br>
 
+Redis 的字典相当于 Java 语言里面的 HashMap，它是无序字典。内部实现结构上同 Java 的 HashMap 也是一致的，同样的数组 + 链表二维结构。第一维 hash 的数组位置碰撞时，就会将碰撞的元素使用链表串接起来。不同的是，Redis 的字典的值只能是字符串。
+
+当 hash 移除了最后一个元素之后，该数据结构自动被删除，内存被回收。
+
 ```html
-> hset hash-key sub-key1 value1
+> hset books java "think in java"  # 命令行的字符串如果包含空格，要用引号括起来
 (integer) 1
-> hset hash-key sub-key2 value2
+> hset books golang "concurrency in go"
 (integer) 1
-> hset hash-key sub-key1 value1
+> hset books python "python cookbook"
+(integer) 1
+> hgetall books  # entries()，key 和 value 间隔出现
+1) "java"
+2) "think in java"
+3) "golang"
+4) "concurrency in go"
+5) "python"
+6) "python cookbook"
+> hlen books
+(integer) 3
+> hget books java
+"think in java"
+> hset books golang "learning go programming"  # 因为是更新操作，所以返回 0
 (integer) 0
+> hget books golang
+"learning go programming"
+> hmset books java "effective java" python "learning python" golang "modern golang programming"  # 批量 set
+OK
 
-> hgetall hash-key
-1) "sub-key1"
-2) "value1"
-3) "sub-key2"
-4) "value2"
-
-> hdel hash-key sub-key2
-(integer) 1
-> hdel hash-key sub-key2
-(integer) 0
-
-> hget hash-key sub-key1
-"value1"
-
-> hgetall hash-key
-1) "sub-key1"
-2) "value1"
+> hincrby user-laoqian age 1
+(integer) 30
 ```
 
 ## ZSET
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/1202b2d6-9469-4251-bd47-ca6034fb6116.png" width="400"/> </div><br>
 
+zset 类似于 Java 的 SortedSet 和 HashMap 的结合体，一方面它是一个 set，保证了内部 value 的唯一性，另一方面它可以给每个 value 赋予一个 score，代表这个 value 的排序权重。它的内部实现用的是一种叫做「跳跃列表」的数据结构。
+
+zset 中最后一个 value 被移除后，数据结构自动删除，内存被回收。
+
 ```html
-> zadd zset-key 728 member1
+> zadd books 9.0 "think in java"
 (integer) 1
-> zadd zset-key 982 member0
+> zadd books 8.9 "java concurrency"
 (integer) 1
-> zadd zset-key 982 member0
-(integer) 0
-
-> zrange zset-key 0 -1 withscores
-1) "member1"
-2) "728"
-3) "member0"
-4) "982"
-
-> zrangebyscore zset-key 0 800 withscores
-1) "member1"
-2) "728"
-
-> zrem zset-key member1
+> zadd books 8.6 "java cookbook"
 (integer) 1
-> zrem zset-key member1
-(integer) 0
+> zrange books 0 -1  # 按 score 排序列出，参数区间为排名范围
+1) "java cookbook"
+2) "java concurrency"
+3) "think in java"
+> zrevrange books 0 -1  # 按 score 逆序列出，参数区间为排名范围
+1) "think in java"
+2) "java concurrency"
+3) "java cookbook"
+> zcard books  # 相当于 count()
+(integer) 3
 
-> zrange zset-key 0 -1 withscores
-1) "member0"
-2) "982"
+> zscore books "java concurrency"  # 获取指定 value 的 score
+"8.9000000000000004"  # 内部 score 使用 double 类型进行存储，所以存在小数点精度问题
+> zrank books "java concurrency"  # 排名
+(integer) 1
+> zrangebyscore books 0 8.91  # 根据分值区间遍历 zset
+1) "java cookbook"
+2) "java concurrency"
+> zrangebyscore books -inf 8.91 withscores # 根据分值区间 (-∞, 8.91] 遍历 zset，同时返回分值。inf 代表 infinite，无穷大的意思。
+1) "java cookbook"
+2) "8.5999999999999996"
+3) "java concurrency"
+4) "8.9000000000000004"
+> zrem books "java concurrency"  # 删除 value
+(integer) 1
+> zrange books 0 -1
+1) "java cookbook"
+2) "think in java"
 ```
 
-# 三、数据结构
+## 位图
+
+```html
+127.0.0.1:6379> setbit w 1 1
+(integer) 0
+127.0.0.1:6379> setbit w 2 1
+(integer) 0
+127.0.0.1:6379> getbit w 2
+(integer) 1
+127.0.0.1:6379> bitcount w    # 统计指定位置范围内 1 的个数
+(integer) 2
+127.0.0.1:6379> bitcount w 0 0  # 第一个字符中 1 的位数
+(integer) 3
+127.0.0.1:6379> bitcount w 0 1  # 前两个字符中 1 的位数
+(integer) 7
+```
+
+## HyperLogLog
+
+不精确去重计算，标准误差是 0.81%。在计数比较小时，它的存储空间采用稀疏矩阵存储，空间占用很小，仅仅在计数慢慢变大，稀疏矩阵占用空间渐渐超过了阈值时才会一次性转变成稠密矩阵，才会占用 12k 的空间。
+
+```html
+127.0.0.1:6379> pfcount codehole user1
+(integer) 1
+127.0.0.1:6379> pfadd codehole user2 user3 user4
+(integer) 1
+127.0.0.1:6379> pfcount codehole
+(integer) 4
+```
+## 布隆过滤器
+
+Redis 官方提供的布隆过滤器到了 Redis 4.0 提供了插件功能之后才正式登场。布隆过滤器作为一个插件加载到 Redis Server 中，作用类似一个不精确的集合，给 Redis 提供了强大的布隆去重功能。
+
+```html
+127.0.0.1:6379> bf.add codehole user1
+(integer) 1
+127.0.0.1:6379> bf.add codehole user2
+(integer) 1
+127.0.0.1:6379> bf.add codehole user3
+(integer) 1
+127.0.0.1:6379> bf.exists codehole user1
+(integer) 1
+127.0.0.1:6379> bf.exists codehole user2
+(integer) 1
+127.0.0.1:6379> bf.exists codehole user3
+(integer) 1
+127.0.0.1:6379> bf.exists codehole user4
+(integer) 0
+127.0.0.1:6379> bf.madd codehole user4 user5 user6
+1) (integer) 1
+2) (integer) 1
+3) (integer) 1
+127.0.0.1:6379> bf.mexists codehole user4 user5 user6 user7
+1) (integer) 1
+2) (integer) 1
+3) (integer) 1
+4) (integer) 0
+```
+
+##  过期时间
+
+Redis 所有的数据结构都可以设置过期时间，时间到了，Redis 会自动删除相应的对象。需要注意的是过期是以对象为单位，比如一个 hash 结构的过期是整个 hash 对象的过期，而不是其中的某个子 key。
+
+还有一个需要特别注意的地方是如果一个字符串已经设置了过期时间，然后你调用了 set 方法修改了它，它的过期时间会消失。
+```html
+127.0.0.1:6379> set codehole yoyo
+OK
+127.0.0.1:6379> expire codehole 600
+(integer) 1
+127.0.0.1:6379> ttl codehole
+(integer) 597
+127.0.0.1:6379> set codehole yoyo
+OK
+127.0.0.1:6379> ttl codehole
+(integer) -1
+```
+
+# 三、底层结构
 
 ## 字典
 
@@ -337,6 +490,21 @@ int dictRehash(dict *d, int n) {
 
 Redis 这种内存型数据库的读写性能非常高，很适合存储频繁读写的计数量。
 
+## 页面UV
+
+精确计算可以使用位图，一个用户id对应一个bit，一亿用户占用12M左右空间，`bitcount`进行统计。最好userid 是整数连续的，并且活跃占比较高。签到功能也可以类似实现。
+
+不精确去重计算可用 HyperLogLog ，大大节省空间。
+
+## 不精确去重
+
+可使用布隆过滤器，类似一个不精确的set，应用场景:
+ - 新闻推送去重: 判断是否已经推送过某条新闻。
+ - 爬虫URL去重: 判断是否爬过某个URL。
+ - 邮件黑名单过滤: 判断邮件地址是否在黑名单中。
+ - 数据库请求过滤: 过滤掉一些不存在的 row 请求，降低数据库的 IO 请求数量。
+ -  缓存穿透: 大量请求一个不存在的数据不在缓存中就去查数据库，所以同上。
+
 ## 缓存
 
 将热点数据放到内存中，设置内存的最大使用量以及淘汰策略来保证缓存的命中率。
@@ -349,8 +517,11 @@ Redis 这种内存型数据库的读写性能非常高，很适合存储频繁�
 
 ## 消息队列
 
-List 是一个双向链表，可以通过 lpush 和 rpop 写入和读取消息
-
+List 是一个双向链表，可以通过 lpush 和 rpop 写入和读取消息。blpop/brpop  指令是阻塞读，在队列没有数据的时候，会立即进入休眠状态，一旦数据到来，则立刻醒过来
+(注意空闲连接的断开问题，捕获异常和重试)。
+```html
+BRPOP key1 [key2 ] timeout
+```
 不过最好使用 Kafka、RabbitMQ 等消息中间件。
 
 ## 会话缓存
@@ -364,6 +535,26 @@ List 是一个双向链表，可以通过 lpush 和 rpop 写入和读取消息
 在分布式场景下，无法使用单机环境下的锁来对多个节点上的进程进行同步。
 
 可以使用 Redis 自带的 SETNX 命令实现分布式锁，除此之外，还可以使用官方提供的 RedLock 分布式锁实现。
+```html
+> set lock-1 true ex 5 nx
+OK
+... do something critical ...
+> del lock-1
+```
+
+### 超时问题
+
+Redis 的分布式锁不能解决超时问题，如果在加锁和释放锁之间的逻辑执行的太长，以至于超出了锁的超时限制，就会出现问题。因为这时候第一个线程持有的锁过期了，临界区的逻辑还没有执行完，这个时候第二个线程就提前重新持有了这把锁，导致临界区代码不能得到严格的串行执行。
+
+为了避免这个问题，Redis 分布式锁不要用于较长时间的任务。如果真的偶尔出现了，数据出现的小波错乱可能需要人工介入解决。
+
+有一个稍微安全一点的方案是为 set 指令的 value 参数设置为一个随机数，释放锁时先匹配随机数是否一致，然后再删除 key，这是为了确保当前线程占有的锁不会被其它线程释放，除非这个锁是过期了被服务器自动释放的。 但是匹配 value 和删除 key 不是一个原子操作，Redis 也没有提供类似于`delifequals`这样的指令，这就需要使用 Lua 脚本来处理了，因为 Lua 脚本可以保证连续多个指令的原子性执行。
+
+### Redlock 算法
+
+为了使用 Redlock，需要提供多个 Redis 实例，这些实例之前相互独立没有主从关系。同很多分布式算法一样，redlock 也使用「大多数机制」。
+
+加锁时，它会向过半节点发送 `set(key, value, nx=True, ex=xxx)` 指令，只要过半节点 set 成功，那就认为加锁成功。释放锁时，需要向所有节点发送 del 指令。不过 Redlock 算法还需要考虑出错重试、时钟漂移等很多细节问题，同时因为 Redlock 需要向多个节点进行读写，意味着相比单实例 Redis 性能会下降一些。
 
 ## 其它
 

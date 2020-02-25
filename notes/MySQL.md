@@ -664,6 +664,7 @@ MySQL 的设计思想：如果内存够，就要多利用内存，尽量减少�
 
 - BaronScbwartz, PeterZaitsev, VadimTkacbenko, 等. 高性能 MySQL[M]. 电子工业出版社, 2013.
 - 姜承尧. MySQL 技术内幕: InnoDB 存储引擎 [M]. 机械工业出版社, 2011.
+- [面试总被问分库分表怎么办？你可以这样怼他](https://juejin.im/post/5e53aa67f265da573b0da9f6?utm_source=gold_browser_extension)
 - [20+ 条 MySQL 性能优化的最佳经验](https://www.jfox.info/20-tiao-mysql-xing-nen-you-hua-de-zui-jia-jing-yan.html)
 - [服务端指南 数据存储篇 | MySQL（09） 分库与分表带来的分布式困境与应对之策](http://blog.720ui.com/2017/mysql_core_09_multi_db_table2/ "服务端指南 数据存储篇 | MySQL（09） 分库与分表带来的分布式困境与应对之策")
 - [How to create unique row ID in sharded databases?](https://stackoverflow.com/questions/788829/how-to-create-unique-row-id-in-sharded-databases)
@@ -673,5 +674,4 @@ MySQL 的设计思想：如果内存够，就要多利用内存，尽量减少�
 - [How Sharding Works](https://medium.com/@jeeyoungk/how-sharding-works-b4dec46b3f6)
 - [大众点评订单系统分库分表实践](https://tech.meituan.com/dianping_order_db_sharding.html)
 - [B + 树](https://zh.wikipedia.org/wiki/B%2B%E6%A0%91)
-
 

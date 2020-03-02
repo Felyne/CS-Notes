@@ -57,6 +57,8 @@
 - [Go 知识点](https://github.com/Felyne/CS-Notes/blob/master/notes/Go知识点.md)
 - [Go 语言圣经](https://books.studygolang.com/gopl-zh/)
 - [Go 语言设计与实现](https://draveness.me/golang/)
+- [Go 文章](https://github.com/Felyne/CS-Notes/blob/master/notes/Go文章.md)
+- [跟着煎鱼学GO](https://book.eddycjy.com/golang/)
 
 
 ## :bulb: 系统设计 

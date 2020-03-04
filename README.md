@@ -59,7 +59,6 @@
 - [Go语言高级编程](https://chai2010.gitbooks.io/advanced-go-programming-book/content/)
 - [Go 语言设计与实现](https://draveness.me/golang/)
 - [Go 文章](https://github.com/Felyne/CS-Notes/blob/master/notes/GO文章.md)
-- [跟着煎鱼学GO](https://book.eddycjy.com/golang/)
 
 
 ## :bulb: 系统设计 

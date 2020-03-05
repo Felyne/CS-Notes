@@ -16,3 +16,4 @@
 应用:
 
 - [跟着煎鱼学GO](https://book.eddycjy.com/golang/)
+- [go微服务框架go-micro深度学习-目录](https://blog.csdn.net/mi_duo/article/details/88790547)

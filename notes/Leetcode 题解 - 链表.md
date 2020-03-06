@@ -245,9 +245,6 @@ func deleteDuplicates(head *ListNode) *ListNode {
 [Leetcode](https://leetcode.com/problems/linked-list-cycle/) / [力扣](https://leetcode-cn.com/problems/linked-list-cycle/)
 ```go
 func hasCycle(head *ListNode) bool {
-  if head == nil {
-      return false
-  }
   fast, slow := head, head
   for fast != nil && fast.Next != nil {
       fast = fast.Next.Next
@@ -301,10 +298,8 @@ func removeNthFromEnd(head *ListNode, n int) *ListNode {
         first = first.Next
     }
     // 要删除的是第L-n+1个结点，先找到L-n这个结点
-     length -= n;
     first = dummy;
-    for length > 0 {
-        length --
+    for  i := 0; i < length - n; i++ {
         first = first.Next
     }
     first.Next = first.Next.Next

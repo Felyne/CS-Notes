@@ -198,6 +198,30 @@ private int depth(TreeNode root) {
     return Math.max(leftDepth, rightDepth) + 1;
 }
 ```
+golang
+```go
+func diameterOfBinaryTree(root *TreeNode) int {
+    depth(root)
+    return max
+}
+
+var max = 0
+
+func depth(root *TreeNode) int {
+    if root == nil {
+        return 0
+    }
+    l := depth(root.Left)
+    r := depth(root.Right)
+    if l+r > max {
+        max = l+r
+    }
+    if l > r {
+        return l+1
+    }
+    return r+1
+}
+```
 
 ## 4. 翻转树
 
@@ -516,7 +540,7 @@ public int minDepth(TreeNode root) {
 }
 ```
 golang
-```
+```go
 func minDepth(root *TreeNode) int {
     if root == nil {
         return 0
@@ -1147,7 +1171,7 @@ private void inOrder(TreeNode node, int k) {
     inOrder(node.right, k);
 }
 ```
-中序遍历g(golang)
+中序遍历(golang)
 ```go
 func kthSmallest(root *TreeNode, k int) int {
     inorder(root, k)

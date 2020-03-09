@@ -129,6 +129,60 @@ class MinStack {
     }
 }
 ```
+golang
+```go
+
+type MinStack struct {
+	dataStack []int
+	minStack  []int //和dataStack同样大小
+	min       int
+}
+
+/** initialize your data structure here. */
+func Constructor() MinStack {
+	return MinStack{min: math.MaxInt32}
+}
+
+func (s *MinStack) Push(x int) {
+	s.dataStack = append(s.dataStack, x)
+	minValue := s.min
+	if x < s.min {
+		minValue = x
+	}
+	s.min = minValue
+	s.minStack = append(s.minStack, minValue)
+}
+
+func (s *MinStack) Pop() {
+	length := len(s.dataStack)
+	if length == 0 {
+		return
+    }
+    
+	s.dataStack = s.dataStack[0 : length-1]
+	s.minStack = s.minStack[0 : length-1]
+	// length是删除前的长度，length=1表示删除后为空
+	if length == 1 {
+		s.min = math.MaxInt32
+	} else {
+		s.min = s.minStack[length-2]
+	}
+}
+
+func (s *MinStack) Top() int {
+	if len(s.dataStack) > 0 {
+		return s.dataStack[len(s.dataStack)-1]
+	}
+	return 0
+}
+
+func (s *MinStack) GetMin() int {
+	if len(s.minStack) > 0 {
+		return s.minStack[len(s.minStack)-1]
+	}
+	return math.MaxInt32
+}
+```
 
 对于实现最小值队列问题，可以先将队列使用栈来实现，然后就将问题转换为最小值栈，这个问题出现在 编程之美：3.7。
 
@@ -165,6 +219,52 @@ public boolean isValid(String s) {
     }
     return stack.isEmpty();
 }
+```
+golang
+```go
+func isValid(s string) bool {
+	stack := &Stack{}
+	for _, c := range s {
+		if c == '(' || c == '{' || c == '[' {
+			stack.Push(c)
+		} else {
+			if stack.IsEmpty() {
+				return false
+			}
+			var b1, b2, b3 bool
+			cc := stack.Pop()
+			b1 = c == ')' && cc != '('
+			b2 = c == '}' && cc != '{'
+			b3 = c == ']' && cc != '['
+			// 三种情况都不满足
+			if b1 || b2 || b3 {
+				return false
+			}
+		}
+	}
+	return stack.IsEmpty()
+}
+
+type Stack []int32
+
+func (s *Stack) Push(v ...int32) {
+	*s = append(*s, v...)
+}
+
+func (s *Stack) Pop() int32 {
+	length := len(*s)
+	if length == 0 {
+		return 0
+	}
+	v := (*s)[length-1]
+	*s = (*s)[0 : length-1]
+	return v
+}
+
+func (s *Stack) IsEmpty() bool {
+	return len(*s) == 0
+}
+
 ```
 
 # 5. 数组中元素与下一个比它大的元素之间的距离

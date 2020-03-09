@@ -44,12 +44,12 @@ func twoSum(nums []int, target int) []int {
     if len(nums) == 0 {
         return nil
     }
-    keys := make(map[int]int)
-    for k, v := range nums {
-        if _ , ok := keys[target-v]; ok {
-            return []int{keys[target-v], k}
+    indexForNum := make(map[int]int)
+    for i, v := range nums {
+        if index, ok := indexForNum[target-v]; ok {
+            return []int{index, i}
         } else {
-            keys[v] = k
+            indexForNum[v] = i
         }
     }
     return nil
@@ -71,7 +71,16 @@ public boolean containsDuplicate(int[] nums) {
     return set.size() < nums.length;
 }
 ```
-
+golang
+```go
+func containsDuplicate(nums []int) bool {
+    set := make(map[int]bool)
+    for _, v := range nums {
+        set[v] = true
+    }
+    return len(set) < len(nums) 
+}
+```
 # 3. 最长和谐序列
 
 594\. Longest Harmonious Subsequence (Easy)

@@ -51,6 +51,26 @@ public int[] twoSum(int[] numbers, int target) {
     return null;
 }
 ```
+golang
+```go
+func twoSum(numbers []int, target int) []int {
+    if len(numbers) == 0 {
+        return nil
+    }
+    i, j := 0, len(numbers) - 1
+    for i < j {
+        sum := numbers[i] + numbers[j]
+        if sum == target {
+            return []int{i+1, j+1}
+        } else if sum < target {
+            i++
+        } else {
+            j--
+        }
+    }
+    return nil
+}
+```
 
 # 2. 两数平方和
 
@@ -220,6 +240,30 @@ public void merge(int[] nums1, int m, int[] nums2, int n) {
     }
 }
 ```
+golang
+```go
+func merge(nums1 []int, m int, nums2 []int, n int) {
+	index1, index2 := m-1, n-1
+	indexMerge := m + n - 1
+	for index1 >= 0 || index2 >= 0 {
+		// nums1已经取完了
+		if index1 < 0 {
+			nums1[indexMerge] = nums2[index2]
+			index2--
+		} else if index2 < 0 {
+			nums1[indexMerge] = nums1[index1]
+			index1--
+		} else if nums1[index1] > nums2[index2] {
+			nums1[indexMerge] = nums1[index1]
+			index1--
+		} else {
+			nums1[indexMerge] = nums2[index2]
+            index2--
+		}
+		indexMerge--
+	}
+}
+```
 
 # 6. 判断链表是否存在环
 
@@ -243,6 +287,20 @@ public boolean hasCycle(ListNode head) {
         l2 = l2.next.next;
     }
     return false;
+}
+```
+golang
+```go
+func hasCycle(head *ListNode) bool {
+  fast, slow := head, head
+  for fast != nil && fast.Next != nil {
+      fast = fast.Next.Next
+      slow = slow.Next
+      if fast == slow {
+          return true
+      }
+  }
+  return false
 }
 ```
 

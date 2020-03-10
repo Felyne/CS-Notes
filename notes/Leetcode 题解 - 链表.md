@@ -292,17 +292,17 @@ func removeNthFromEnd(head *ListNode, n int) *ListNode {
     dummy := new(ListNode)
     dummy.Next = head
     length := 0
-    first := head
-    for first != nil {
+    cur := head
+    for cur != nil {
         length ++
-        first = first.Next
+        cur = cur.Next
     }
     // 要删除的是第L-n+1个结点，先找到L-n这个结点
-    first = dummy;
+    cur = dummy
     for  i := 0; i < length - n; i++ {
-        first = first.Next
+        cur = cur.Next
     }
-    first.Next = first.Next.Next
+    cur.Next = cur.Next.Next
     return dummy.Next
 }
 ```
@@ -437,8 +437,8 @@ func addTwoNumbers(l1 *ListNode, l2 *ListNode) *ListNode {
         y, _ := s2.Pop()
         sum := x + y + carry
         node := &ListNode{Val: sum % 10}
-        node.Next = head.Next
-		head.Next = node
+        node.Next = head.Next  
+		head.Next = node  
         carry = sum / 10
     }
     return head.Next
@@ -535,8 +535,8 @@ func isPalindrome(head *ListNode) bool {
     }
     // slow, fast用于找到中间位置
     slow, fast := head, head
-    // pre和cur用于反转，也要不断推进
-    var pre *ListNode = nil
+    // pre和cur用于反转前半段，不断推进
+    var pre *ListNode
     cur := head
     for fast != nil && fast.Next != nil {
         cur = slow

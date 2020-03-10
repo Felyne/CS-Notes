@@ -81,7 +81,7 @@ public int climbStairs(int n) {
 动态规划(使用自底向上的迭代实现)
 ```go
 func climbStairs(n int) int {
-    if n == 1 || n == 2 {
+    if n <= 2 {
         return n
     }
     dp := make([]int, n+1, n+1)
@@ -91,6 +91,21 @@ func climbStairs(n int) int {
         dp[i] = dp[i-1] + dp[i-2]
     }
     return dp[n]
+}
+```
+优化
+```go
+func climbStairs(n int) int {
+    if n  <= 2  {
+        return n
+    }
+    pre2, pre1 := 1, 2
+    for i := 3; i <= n; i++ {
+        cur := pre2 + pre1
+        pre2 = pre1
+        pre1 = cur
+    }
+    return pre1
 }
 ```
 
@@ -247,6 +262,7 @@ public int minPathSum(int[][] grid) {
 
 dp(i,j)=grid(i,j)+min(dp(i+1,j),dp(i,j+1))
 
+golang
 ```go
 func minPathSum(grid [][]int) int {
     if len(grid) == 0 {
@@ -305,7 +321,9 @@ public int uniquePaths(int m, int n) {
 ```
 
 动态规划:  
-dp[i][j]表示到达右下角的路径数
+dp[i][j]表示到达右下角的路径数  
+
+golang
 ```go
 func uniquePaths(m int, n int) int {
     dp := make([][]int, m)

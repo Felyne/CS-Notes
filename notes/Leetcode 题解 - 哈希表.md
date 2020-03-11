@@ -46,7 +46,7 @@ func twoSum(nums []int, target int) []int {
     }
     indexForNum := make(map[int]int)
     for i, v := range nums {
-        if index, ok := indexForNum[target-v]; ok {
+        if index, exist := indexForNum[target-v]; exist {
             return []int{index, i}
         } else {
             indexForNum[v] = i

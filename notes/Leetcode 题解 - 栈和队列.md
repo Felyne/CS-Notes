@@ -236,7 +236,7 @@ func isValid(s string) bool {
 			b1 = c == ')' && cc != '('
 			b2 = c == '}' && cc != '{'
 			b3 = c == ']' && cc != '['
-			// 三种情况都不满足
+			// 出现其中一种情况
 			if b1 || b2 || b3 {
 				return false
 			}

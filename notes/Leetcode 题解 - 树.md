@@ -1213,7 +1213,7 @@ private int count(TreeNode node) {
 
 ## 3. 把二叉查找树每个节点的值都加上比它大的节点的值
 
-Convert BST to Greater Tree (Easy)
+538\. Convert BST to Greater Tree (Easy)
 
 [Leetcode](https://leetcode.com/problems/convert-bst-to-greater-tree/description/) / [力扣](https://leetcode-cn.com/problems/convert-bst-to-greater-tree/description/)
 

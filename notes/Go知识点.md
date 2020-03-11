@@ -27,6 +27,13 @@
 ```
 
 
+### int 类型
+
+查看位数
+```go
+// 64位系统是64
+strconv.IntSize 
+```
 ### 5.channel的注意点
 
 1. 往一个已经被close的channel中发送数据会导致run-time panic

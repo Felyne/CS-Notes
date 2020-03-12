@@ -61,6 +61,49 @@ public int findKthLargest(int[] nums, int k) {
     return pq.peek();
 }
 ```
+golang
+```go
+func findKthLargest(nums []int, k int) int {
+	length := len(nums)
+	if length < k {
+		return math.MinInt32
+	}
+
+	//前k个数据取出,并构造大小为k的小顶堆(最大堆)
+	maxHeap := make([]int, 0, k)
+    maxHeap = append(maxHeap, nums[:k]...)
+    // 从最后一个非叶子结点开始，从下往上调整
+	for i := k/2 - 1; i >= 0; i-- {
+		adjustHeap(maxHeap, i, k-1)
+	}
+
+	// 遍历剩余数据,大于堆顶数据时(第k大),替换堆顶,重新维护小顶堆
+	for i := k; i < length; i++ {
+		if nums[i] > maxHeap[0] {
+			maxHeap[0] = nums[i]
+			adjustHeap(maxHeap, 0, k-1)
+		}
+	}
+	return maxHeap[0]
+}
+
+//调整小顶堆
+func adjustHeap(a []int, root, end int) {
+	for k := 2*root + 1; k <= end; k = 2*k + 1 {
+		//选择出左右孩子较小的下标
+		if k < end && a[k] > a[k+1] {
+			k++
+		}
+		//如果子节点小于父节点，进行交换
+		if a[k] < a[root] {
+			a[root], a[k] = a[k], a[root]
+			root = k
+		} else {
+			break
+		}
+	}
+}
+```
 
 **快速选择**  ：时间复杂度 O(N)，空间复杂度 O(1)
 

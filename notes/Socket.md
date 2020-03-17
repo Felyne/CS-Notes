@@ -49,7 +49,7 @@ TCP的服务端要先监听一个端口，一般是先调用bind函数，给这�
 
 ## UNIX Domain Socket
 
-Unix Domain Socket 主要用于同一主机上的进程间通信。虽然网络 socket 也可用于同一台主机的进程间通讯，但是 UNIX Domain Socket 用于 IPC 更有效率：不需要经过网络协议栈，不需要打包拆包、计算校验和、维护序号和应答等，只是将应用层数据从一个进程拷贝到另一个进程。这是因为，IPC 机制本质上是可靠的通讯，而网络协议是为不可靠的通讯设计的。
+Unix Domain Socket 主要用于同一主机上的进程间通信。虽然网络 socket 也可用于同一台主机的进程间通讯，但是 UNIX Domain Socket 用于 IPC 更有效率：不需要经过网络协议栈，不需要打包拆包、计算校验和、维护序号和应答等，只是将应用层数据从一个进程拷贝到另一个进程。因为IPC 机制本质上是可靠的通讯，而网络协议是为不可靠的通讯设计的。
 
 使用UNIX Domain Socket的过程和网络socket十分相似，也要先调用socket()创建一个socket文件描述符，address family指定为AF_UNIX，type可以选择SOCK_DGRAM或SOCK_STREAM，protocol参数仍然指定为0。
 ```c

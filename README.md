@@ -75,6 +75,7 @@
 
 - [Git](https://github.com/Felyne/CS-Notes/blob/master/notes/Git.md)
 - [Docker](https://github.com/Felyne/CS-Notes/blob/master/notes/Docker.md)
+- [Nginx](https://github.com/Felyne/CS-Notes/blob/master/notes/Nginx.md)
 - [构建工具](https://github.com/Felyne/CS-Notes/blob/master/notes/构建工具.md)
 - [正则表达式](https://github.com/Felyne/CS-Notes/blob/master/notes/正则表达式.md)
 

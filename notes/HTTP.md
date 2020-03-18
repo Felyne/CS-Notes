@@ -770,9 +770,20 @@ HTTPS 并不是新协议，而是让 HTTP 先和 SSL（Secure Sockets Layer）�
 上面提到对称密钥加密方式的传输效率更高，但是无法安全地将密钥 Secret Key 传输给通信方。而非对称密钥加密方式可以保证传输的安全性，因此我们可以利用非对称密钥加密方式将 Secret Key  传输给通信方。HTTPS 采用混合的加密机制，正是利用了上面提到的方案：
 
 - 使用非对称密钥加密方式，传输对称密钥加密方式所需要的 Secret Key，从而保证安全性;
-- 获取到 Secret Key 后，再使用对称密钥加密方式进行通信，从而保证效率。（下图中的 Session Key 就是 Secret Key）
+- 获取到 Secret Key 后，再使用对称密钥加密方式进行通信，从而保证效率。
 
-<div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/How-HTTPS-Works.png" width="600"/> </div><br>
+<div align="center"> <img src="img/https.jpg" /> </div><br>
+
+1. 客户端会发送Client Hello消息到服务器，以明文传输TLS版本信息、加密套件候选列表、压缩算法候选列表等信息，还有一个随机数。
+2. 服务端返回Server Hello消息, 告诉客户端，服务器选择使用的协议版本、加密套件、压缩算法等，还有一个随机数，用于后续的密钥协商。
+3. 然后服务端发给用户一个证书，证书里面有证书的发布机构CA、证书的有效期、公钥、证书所有者、签名等信息。
+4. 客户端信任的CA仓库中，拿CA的证书里面的公钥去解密和校验证书。
+5. 证书验证完毕之后，证明服务端是可靠地，于是客户端计算产生随机数字Pre-master，发送Client Key Exchange，用证书中的公钥加密，再发送给服务器，服务器可以通过私钥解密出来。
+6. 双方都拥有了三个随机数，分别是：自己的、对端的，以及刚生成的Pre-Master随机数。通过这三个随机数，可以在客户端和服务器产生相同的对称密钥。
+7. 有了对称密钥，双方进行握手协商后，开始进行对称加密传输了
+
+上面的过程只包含了HTTPS的单向认证，也即客户端验证服务端的证书，是大部分的场景，也可以在更加严格安全要求的情况下，启用双向认证，双方互相验证证书。
+
 
 ## 认证
 
@@ -782,9 +793,9 @@ HTTPS 并不是新协议，而是让 HTTP 先和 SSL（Secure Sockets Layer）�
 
 服务器的运营人员向 CA 提出公开密钥的申请，CA 在判明提出申请者的身份之后，会对已申请的公开密钥做数字签名，然后分配这个已签名的公开密钥，并将该公开密钥放入公开密钥证书后绑定在一起。
 
-进行 HTTPS 通信时，服务器会把证书发送给客户端。客户端取得其中的公开密钥之后，先使用数字签名进行验证，如果验证通过，就可以开始通信了。
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/2017-06-11-ca.png" width=""/> </div><br>
+
 
 ## 完整性保护
 
@@ -829,13 +840,10 @@ add_header Strict-Transport-Security "max-age=15768000; includeSubdomains" alway
 
 ### 缺点
 
-用户首次访问某网站是不受HSTS保护的。这是因为首次访问时，浏览器还未收到HSTS的响应头，所以仍有可能通过明文HTTP来访问或者跳转的时候被劫持。
+用户首次访问某网站是不受HSTS保护的。这是因为首次访问时，浏览器还未收到HSTS的响应头，所以仍有可能通过明文HTTP来访问或者跳转的时候被劫持。解决这个不足目前有两种方案：
 
-解决这个不足目前有两种方案：
-
-一是浏览器预置HSTS域名列表，Google Chrome、Firefox、Internet Explorer和Spartan实现了这一方案。
-
-二是将HSTS信息加入到域名系统记录中。但这需要保证DNS的安全性，也就是需要部署域名系统安全扩展。截至2014年这一方案没有大规模部署。
+- 浏览器预置HSTS域名列表，Google Chrome、Firefox、Internet Explorer和Spartan实现了这一方案。
+- 将HSTS信息加入到域名系统记录中。但这需要保证DNS的安全性，也就是需要部署域名系统安全扩展。截至2014年这一方案没有大规模部署。
 
 
 # 七、HTTP/2.0

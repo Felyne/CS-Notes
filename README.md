@@ -49,6 +49,7 @@
 - [SQL](https://github.com/Felyne/CS-Notes/blob/master/notes/SQL.md)
 - [Leetcode-Database 题解](https://github.com/Felyne/CS-Notes/blob/master/notes/Leetcode-Database%20题解.md)
 - [MySQL](https://github.com/Felyne/CS-Notes/blob/master/notes/MySQL.md)
+- [MongoDB](https://github.com/Felyne/CS-Notes/blob/master/notes/MongoDB.md)
 - [Redis](https://github.com/Felyne/CS-Notes/blob/master/notes/Redis.md)
 
 

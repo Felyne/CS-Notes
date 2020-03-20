@@ -319,46 +319,33 @@ Redis5.0出现的支持多播的可持久化的消息队列。
 ## 布隆过滤器
 
 Redis 官方提供的布隆过滤器到了 Redis 4.0 提供了插件功能之后才正式登场。布隆过滤器作为一个插件加载到 Redis Server 中，作用类似一个不精确的集合，给 Redis 提供了强大的布隆去重功能。
-
-1970 年布隆提出了一种布隆过滤器的算法，用来判断一个元素是否在一个集合中。这种算法由一个二进制数组和一个 Hash 算法组成。它的基本思路如下:
-
-我们把集合中的每一个值按照提供的 Hash 算法算出对应的 Hash 值，然后将 Hash 值对数组长度取模后得到需要计入数组的索引值，并且将数组这个位置的值从 0 改成 1。在判断一个元素是否存在于这个集合中时，你只需要将这个元素按照相同的算法计算出索引值，如果这个位置的值为 1 就认为这个元素在集合中，否则则认为不在集合中。
-
-<div align="center"> <img src="img/bulong.jpeg"  width=650/> </div><br>
-
-A、B、C 等元素组成了一个集合，元素 D 计算出的 Hash 值所对应的的数组中值是 1，所以可以认为 D 也在集合中。而 F 在数组中的值是 0，所以 F 不在数组中。
-
-它主要有两个缺陷:
-
-- **它在判断元素是否在集合中时是有一定错误几率的，它会把不是集合中的元素判断为处在集合中**。这个主要是 Hash 算法的问题，存在着一定的碰撞几率。因为更长的 Hash 值会带来更高的存储成本和计算成本，所以解决方案是:使用多个 Hash 算法为元素计算出多个 Hash 值，只有所有 Hash 值对应的数组中的值都为 1 时，才会认为这个元素在集合中。
-
-- **不支持删除元素**。这个也和和 Hash 碰撞有关，假如两个元素 A 和 B 都是集合中的元素，它们有相同的 Hash 值，它们就会映射到数组的同一个位置。这时我们删除了 A，数组中对应位置的值也从 1 变成 0，那么在判断 B 的时候发现值是 0，也会判断 B 是不在集合中的元素，就会得到错误的结论。解决方案是让数组中不再只有 0 和 1 两个值，而是存储一个计数，但会消耗更大的空间。
+```sh
+> docker run -d -p 6379:6379 --name bloomfilter redislabs/rebloom
+> docker exec -it bloomfilter redis-cli
+```
 
 ```html
 127.0.0.1:6379> bf.add codehole user1
 (integer) 1
-127.0.0.1:6379> bf.add codehole user2
-(integer) 1
-127.0.0.1:6379> bf.add codehole user3
-(integer) 1
 127.0.0.1:6379> bf.exists codehole user1
 (integer) 1
-127.0.0.1:6379> bf.exists codehole user2
-(integer) 1
-127.0.0.1:6379> bf.exists codehole user3
-(integer) 1
-127.0.0.1:6379> bf.exists codehole user4
-(integer) 0
-127.0.0.1:6379> bf.madd codehole user4 user5 user6
+127.0.0.1:6379> bf.madd codehole user4 user5 
 1) (integer) 1
 2) (integer) 1
-3) (integer) 1
-127.0.0.1:6379> bf.mexists codehole user4 user5 user6 user7
+127.0.0.1:6379> bf.mexists codehole user4 user5 user6
 1) (integer) 1
 2) (integer) 1
-3) (integer) 1
 4) (integer) 0
 ```
+布隆过滤器存在误判的情况，在 redis 中有两个值决定布隆过滤器的准确率:
+- `error_rate `：允许布隆过滤器的错误率，这个值越低过滤器的位数组的大小越大，占用空间也就越大。
+- `initial_size` ：布隆过滤器可以储存的元素个数，当实际存储的元素个数超过这个值之后，过滤器的准确率会下降。
+
+redis 中有一个命令可以来设置这两个值：
+```sh
+bf.reserve urls 0.01 100
+```
+使用这个命令要注意一点：执行这个命令之前过滤器的名字应该不存在，如果执行之前就存在会报错。
 
 ##  过期时间
 
@@ -561,6 +548,8 @@ BRPOP key1 [key2 ] timeout
 在分布式场景下，无法使用单机环境下的锁来对多个节点上的进程进行同步。
 
 可以使用 Redis 自带的 SETNX 命令实现分布式锁，除此之外，还可以使用官方提供的 RedLock 分布式锁实现。
+
+setnx保证互斥性，同时setnx和设置过期时间需要保持原子性，Value 值为一个唯一标示
 ```html
 > set lock-1 true ex 5 nx
 OK
@@ -570,17 +559,117 @@ OK
 
 ### 超时问题
 
-Redis 的分布式锁不能解决超时问题，如果在加锁和释放锁之间的逻辑执行的太长，以至于超出了锁的超时限制，就会出现问题。因为这时候第一个线程持有的锁过期了，临界区的逻辑还没有执行完，这个时候第二个线程就提前重新持有了这把锁，导致临界区代码不能得到严格的串行执行。
+如果在加锁和释放锁之间的逻辑执行的太长，以至于超出了锁的超时限制，就会出现以下问题:
 
-为了避免这个问题，Redis 分布式锁不要用于较长时间的任务。如果真的偶尔出现了，数据出现的小波错乱可能需要人工介入解决。
+- 第一个线程持有的锁过期了，临界区的逻辑还没有执行完，其他线程重新持有了这把锁，导致临界区代码不能得到严格的串行执行
+- 第一个线程在锁过期后去释放其他线程持有的锁
 
-有一个稍微安全一点的方案是为 set 指令的 value 参数设置为一个随机数，释放锁时先匹配随机数是否一致，然后再删除 key，这是为了确保当前线程占有的锁不会被其它线程释放，除非这个锁是过期了被服务器自动释放的。 但是匹配 value 和删除 key 不是一个原子操作，Redis 也没有提供类似于`delifequals`这样的指令，这就需要使用 Lua 脚本来处理了，因为 Lua 脚本可以保证连续多个指令的原子性执行。
+第一个问题的解决方案是 Redis 分布式锁不要用于较长时间的任务或者设定任务的执行超时，到期没执行完也要放弃。
+
+第二个问题的解决方案是  set 指令的 value 参数设置为一个唯一标识，释放锁时先匹配是否一致，然后再删除 key，用Lua脚本保证使2个命令的原子性。
+
+模拟多进程争夺同一把锁:
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+	"sync"
+	"time"
+
+	"github.com/go-redis/redis"
+)
+
+func incr() {
+	client := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", 
+		DB:       0,  
+	})
+
+	var lockKey = "counter_lock"
+	var counterKey = "counter"
+
+	// lock
+	value := rand.Intn(99999999) //value是一个唯一标识
+	resp := client.SetNX(lockKey, value, time.Second*5)
+	lockSuccess, err := resp.Result()
+
+	if err != nil || !lockSuccess {
+		fmt.Println(err, "lock result: ", lockSuccess)
+		return
+	}
+
+	// counter ++
+	getResp := client.Get(counterKey)
+	cntValue, err := getResp.Int64()
+	if err == nil || err == redis.Nil {
+		cntValue++
+		resp := client.Set(counterKey, cntValue, 0)
+		_, err := resp.Result()
+		if err != nil {
+			// log err
+			println("set value error!")
+		}
+	}
+	println("current counter is ", cntValue)
+
+	//使用lua脚本来保证比较value和删除key两个操作的原子性
+	script := `if redis.call("get",KEYS[1]) == ARGV[1] then return redis.call("del",KEYS[1]) else return 0 end`
+	delResp := client.Eval(script, []string{lockKey}, value)
+	unlockSuccess, err := delResp.Int()
+	if err == nil && unlockSuccess > 0 {
+		println("unlock success!")
+	} else {
+		println("unlock failed", err)
+	}
+}
+
+func main() {
+	var wg sync.WaitGroup
+	for i := 0; i < 10; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			incr()
+		}()
+	}
+	wg.Wait()
+}
+
+```
 
 ### Redlock 算法
 
 为了使用 Redlock，需要提供多个 Redis 实例，这些实例之前相互独立没有主从关系。同很多分布式算法一样，redlock 也使用「大多数机制」。
 
 加锁时，它会向过半节点发送 `set(key, value, nx=True, ex=xxx)` 指令，只要过半节点 set 成功，那就认为加锁成功。释放锁时，需要向所有节点发送 del 指令。不过 Redlock 算法还需要考虑出错重试、时钟漂移等很多细节问题，同时因为 Redlock 需要向多个节点进行读写，意味着相比单实例 Redis 性能会下降一些。
+
+```py
+import redlock
+
+addrs = [{
+    "host": "localhost",
+    "port": 6379,
+    "db": 0
+}, {
+    "host": "localhost",
+    "port": 6479,
+    "db": 0
+}, {
+    "host": "localhost",
+    "port": 6579,
+    "db": 0
+}]
+dlm = redlock.Redlock(addrs)
+success = dlm.lock("user-lck-laoqian", 5000)
+if success:
+    print 'lock success'
+    dlm.unlock('user-lck-laoqian')
+else:
+    print 'lock failed'
+```
 
 ## 其它
 
@@ -640,7 +729,6 @@ noeviction 不会继续服务写请求 (DEL 请求可以继续服务)，读请�
 使用 Redis 缓存数据时，为了提高缓存命中率，需要保证缓存数据都是热点数据。可以将内存最大使用量设置为热点数据占用的内存量，然后启用 allkeys-lru 淘汰策略，将最近最少使用的数据淘汰。
 
 Redis 4.0 引入了 volatile-lfu 和 allkeys-lfu 淘汰策略，LFU 策略通过统计访问频率，将访问频率最少的键值对淘汰。
-
 
 
 # 八、持久化
@@ -857,4 +945,4 @@ Redis 没有关系型数据库中的表这一概念来将同种类型的数据�
 - [Redis 3.0 中文版- 分片](http://wiki.jikexueyuan.com/project/redis-guide)
 - [Redis 应用场景](http://www.scienjus.com/redis-use-case/)
 - [Using Redis as an LRU cache](https://redis.io/topics/lru-cache)
-
+- [Redis实现分布式锁的正确姿势](https://www.cnblogs.com/zhili/p/redisdistributelock.html)

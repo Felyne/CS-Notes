@@ -90,11 +90,11 @@ InnoDB 的 B+Tree 索引分为主索引和辅助索引。主索引的叶子节�
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/45016e98-6879-4709-8569-262b2d6d60b9.png" width="350px"> </div><br>
 
-辅助索引的叶子节点的 data 域记录着主键的值，因此在使用辅助索引进行查找时，需要先查找到主键值，然后再到主索引中进行查找。
+辅助索引的叶子节点的 data 域记录着主键的值，因此在使用辅助索引进行查找时，需要先查找到主键值，然后再到主索引中进行查找和定位行记录，这就是回表。
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/7c349b91-050b-4d72-a7f8-ec86320307ea.png" width="350px"> </div><br>
 
-### 2. 哈希索引
+### 2. 哈希索引 
 
 哈希索引能以 O(1) 时间进行查找，但是失去了有序性：
 

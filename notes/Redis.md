@@ -347,6 +347,7 @@ bf.reserve urls 0.01 100
 ```
 使用这个命令要注意一点：执行这个命令之前过滤器的名字应该不存在，如果执行之前就存在会报错。
 
+[Bloom filter for go, backed by redis](https://github.com/bculberson/bloom)
 ##  过期时间
 
 Redis 所有的数据结构都可以设置过期时间，时间到了，Redis 会自动删除相应的对象。需要注意的是过期是以对象为单位，比如一个 hash 结构的过期是整个 hash 对象的过期，而不是其中的某个子 key。
@@ -638,6 +639,65 @@ func main() {
 	wg.Wait()
 }
 
+```
+
+第二种方式:
+```go
+package main
+
+import (
+  "fmt"
+  "time"
+
+  "github.com/bsm/redislock"
+  "github.com/go-redis/redis/v7"
+)
+
+func main() {
+	// Connect to redis.
+	client := redis.NewClient(&redis.Options{
+		Network:	"tcp",
+		Addr:		"127.0.0.1:6379",
+	})
+	defer client.Close()
+
+	// Create a new lock client.
+	locker := redislock.New(client)
+
+	// Try to obtain lock.
+	lock, err := locker.Obtain("my-key", 100*time.Millisecond, nil)
+	if err == redislock.ErrNotObtained {
+		fmt.Println("Could not obtain lock!")
+	} else if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Don't forget to defer Release.
+	defer lock.Release()
+	fmt.Println("I have a lock!")
+
+	// Sleep and check the remaining TTL.
+	time.Sleep(50 * time.Millisecond)
+	if ttl, err := lock.TTL(); err != nil {
+		log.Fatalln(err)
+	} else if ttl > 0 {
+		fmt.Println("Yay, I still have my lock!")
+	}
+
+	// Extend my lock.
+	if err := lock.Refresh(100*time.Millisecond, nil); err != nil {
+		log.Fatalln(err)
+	}
+
+	// Sleep a little longer, then check.
+	time.Sleep(100 * time.Millisecond)
+	if ttl, err := lock.TTL(); err != nil {
+		log.Fatalln(err)
+	} else if ttl == 0 {
+		fmt.Println("Now, my lock has expired!")
+	}
+
+}
 ```
 
 ### Redlock 算法

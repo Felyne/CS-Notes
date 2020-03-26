@@ -1042,7 +1042,8 @@ go1.8开始加入混合写屏障(hybrid write barrier)，垃圾回收和应用�
  GC 触发方式有自动检测和用户主动调用。除此之后 Golang 本身还会对运行状态进行监控，如果超过两分钟没有 GC，则触发 GC。监控函数是 sysmon()，在主 goroutine 中启动。
 
 
-35.
+35.[goroutine和线程](https://books.studygolang.com/gopl-zh/ch9/ch9-08.html)
+
 goroutine 分配在堆上，有各自的栈
 
 36.判断系统是大端模式还是小端模式

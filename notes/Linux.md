@@ -1393,8 +1393,8 @@ options 参数主要有 WNOHANG 和 WUNTRACED 两个选项，WNOHANG 可以使 w
 
 为避免产生僵尸进程，采取的方式有：
 - 父进程收到SIGCHLD信号，在信号处理函数里用wait或者waitpid函数进行处理
-- 父进程直接忽略该信号。signal(SIGCHLD, SIG_IGN)，这样子进程直接会退出
-- fork两次并杀死一级子进程，令二级子进程成为孤儿进程而被init所“收养”、清理
+- 父进程直接忽略该信号。通过 signal(SIGCHLD, SIG_IGN) 通知内核对子进程的结束不关心，由内核回收
+- fork 两次并退出子进程，令二级子进程成为孤儿进程而被 init 进程所收养
 
 ## proc
 

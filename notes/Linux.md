@@ -1584,6 +1584,12 @@ Buffer是对磁盘数据的缓存，而Cache是文件数据的缓存，它们既
 
 可以用 cachestat 和 cachetop 这两个工具，分别观察系统和进程的缓存命中情况。
 
+
+## 必读
+
+- [被抛弃的tcp_recycle](http://blog.itpub.net/31559359/viewspace-2284113/)
+- [大量TIME_WAIT的终极详解和解决方案](https://blog.csdn.net/bingqingsuimeng/article/details/52064841)
+
 # 参考资料
 
 - 鸟哥. 鸟 哥 的 Linux 私 房 菜 基 础 篇 第 三 版[J]. 2009.

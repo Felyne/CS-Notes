@@ -41,7 +41,7 @@
 ## :art: 面向对象
 
 - [面向对象思想](https://github.com/Felyne/CS-Notes/blob/master/notes/面向对象思想.md)
-- [设计模式](https://github.com/sevenelevenlee/go-patterns)
+- [设计模式](https://github.com/senghoo/golang-design-pattern)
 
 ## :floppy_disk: 数据库
 
@@ -59,6 +59,8 @@
 - [Go 语言圣经](https://books.studygolang.com/gopl-zh/)
 - [Go语言高级编程](https://chai2010.gitbooks.io/advanced-go-programming-book/content/)
 - [Go 语言设计与实现](https://draveness.me/golang/)
+- [Go 面试专题](https://talkgo.org/interview/)
+- [Go 夜读](https://github.com/talk-go/night)
 - [Go 文章](https://github.com/Felyne/CS-Notes/blob/master/notes/GO文章.md)
 
 

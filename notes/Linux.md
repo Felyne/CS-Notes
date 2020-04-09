@@ -1611,4 +1611,6 @@ Buffer是对磁盘数据的缓存，而Cache是文件数据的缓存，它们既
 - [Programming Project #4](https://classes.soe.ucsc.edu/cmps111/Fall08/proj4.shtml)
 - [FILE SYSTEM DESIGN](http://web.cs.ucla.edu/classes/fall14/cs111/scribe/11a/index.html)
 - [理解inode](http://www.ruanyifeng.com/blog/2011/12/inode.html)
-
+- [深入浅出TCP中的SYN-Cookies](https://blog.csdn.net/chenmo187J3X1/article/details/90573816)
+- [理解LINUX的MEMORY OVERCOMMIT](http://linuxperf.com/?p=102)
+- [Linux传统Huge Pages与Transparent Huge Pages再次学习总结](https://www.cnblogs.com/kerrycode/p/7760026.html)

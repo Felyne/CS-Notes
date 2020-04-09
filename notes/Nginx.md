@@ -103,7 +103,7 @@ http {
 - sendfile on：开启高效文件传输模式，sendfile指令指定nginx是否调用sendfile函数来输出文件，避免了内核缓冲区和用户缓冲区之间的数据拷贝( DMA 把硬盘数据拷贝到 kernel buffer)，对于普通应用设为 on，如果用来进行下载等应用磁盘IO重负载应用，可设置为off，以平衡磁盘与网络I/O处理速度，降低系统的负载。
 
 
-- tcp_nodelay on: 如果包的大小不满足MSS，并且还没收到之前发送的数据包的ack，那么这些小数据包会在发送端暂存起来，知道累积到一个MSS或者收到一个ACK为止。选项打开后，数据包会立即发送。
+- tcp_nodelay on: 选项默认关闭。Nagle 算法规定，如果包的大小不满足MSS，并且还没收到之前发送的数据包的ack，那么这些小数据包会在发送端暂存起来，直到累积到一个MSS或者收到一个ACK为止。选项打开后则禁用 Nagle 算法。
 
 - tcp_nopush on：在nginx中，tcp_nopush配置与tcp_nodelay不能同时打开。tcp_nopush 开启会设置TCP_CORK选项，结果就是数据包不会马上传送出去，这样有助于解决网络堵塞。发送时机：
 

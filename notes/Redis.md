@@ -7,7 +7,6 @@
     * [HASH](#hash)
     * [ZSET](#zset)
     * [Stream](#Stream)
-    * [位图](#位图)
     * [HyperLogLog](#HyperLogLog)
     * [布隆过滤器](#布隆过滤器)
 * [三、底层结构](#三底层结构)
@@ -48,7 +47,9 @@
     * [文章信息](#文章信息)
     * [点赞功能](#点赞功能)
     * [对文章进行排序](#对文章进行排序)
+* [十五、常用命令](#十五常用命令)
 * [参考资料](#参考资料)
+
 <!-- GFM-TOC -->
 
 
@@ -129,6 +130,23 @@ OK
 OK
 > incr codehole
 (error) ERR increment or decrement would overflow
+```
+
+位图
+
+```html
+127.0.0.1:6379> setbit w 1 1
+(integer) 0
+127.0.0.1:6379> setbit w 2 1
+(integer) 0
+127.0.0.1:6379> getbit w 2
+(integer) 1
+127.0.0.1:6379> bitcount w    # 统计指定位置范围内 1 的个数
+(integer) 2
+127.0.0.1:6379> bitcount w 0 0  # 第一个字符中 1 的位数
+(integer) 3
+127.0.0.1:6379> bitcount w 0 1  # 前两个字符中 1 的位数
+(integer) 7
 ```
 
 ## LIST
@@ -287,34 +305,20 @@ zset 中最后一个 value 被移除后，数据结构自动删除，内存被�
 
 Redis5.0出现的支持多播的可持久化的消息队列。
 
-## 位图
-
-```html
-127.0.0.1:6379> setbit w 1 1
-(integer) 0
-127.0.0.1:6379> setbit w 2 1
-(integer) 0
-127.0.0.1:6379> getbit w 2
-(integer) 1
-127.0.0.1:6379> bitcount w    # 统计指定位置范围内 1 的个数
-(integer) 2
-127.0.0.1:6379> bitcount w 0 0  # 第一个字符中 1 的位数
-(integer) 3
-127.0.0.1:6379> bitcount w 0 1  # 前两个字符中 1 的位数
-(integer) 7
-```
 
 ## HyperLogLog
 
 不精确去重计数，标准误差是 0.81%。在计数比较小时，它的存储空间采用稀疏矩阵存储，空间占用很小，仅仅在计数慢慢变大，稀疏矩阵占用空间渐渐超过了阈值时才会一次性转变成稠密矩阵，才会占用 12k 的空间。
 
 ```html
-127.0.0.1:6379> pfcount codehole user1
+127.0.0.1:6379> pfadd pool1 a b c
 (integer) 1
-127.0.0.1:6379> pfadd codehole user2 user3 user4
+127.0.0.1:6379> pfadd pool2 c d e
 (integer) 1
-127.0.0.1:6379> pfcount codehole
-(integer) 4
+127.0.0.1:6379> pfmerge pool3 pool1 pool2
+OK
+127.0.0.1:6379> pfcount pool3
+(integer) 5
 ```
 ## 布隆过滤器
 
@@ -995,6 +999,31 @@ Redis 没有关系型数据库中的表这一概念来将同种类型的数据�
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/f7d170a3-e446-4a64-ac2d-cb95028f81a8.png" width="800"/> </div><br>
 
+# 十五、常用命令
+
+### 认证登录
+
+使用密码登录
+```sh
+redis-cli -h 127.0.0.1 -p 6379 -a myPassword
+```
+登录后再认证
+```sh
+auth myPassword
+```
+修改和获取密码
+```sh
+config set requirepass newPassword
+config get requirepass
+```
+
+### 切换数据库
+```sh
+# 默认SELECT 0
+SELECT index
+```
+
+
 # 参考资料
 
 - Carlson J L. Redis in Action[J]. Media.johnwiley.com.au, 2013.
@@ -1006,3 +1035,4 @@ Redis 没有关系型数据库中的表这一概念来将同种类型的数据�
 - [Redis 应用场景](http://www.scienjus.com/redis-use-case/)
 - [Using Redis as an LRU cache](https://redis.io/topics/lru-cache)
 - [Redis实现分布式锁的正确姿势](https://www.cnblogs.com/zhili/p/redisdistributelock.html)
+- [Redis设置认证密码](https://itbilu.com/linux/management/Ey_r7mWR.html)

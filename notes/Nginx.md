@@ -91,38 +91,33 @@ events {
 4. 开启高效传输模式
 ```
 http {
-  include mime.types;
-  default_type application/octet-stream;
-  ……
+    sendfile           on;
+    tcp_nopush         on;
+    tcp_nodelay        on;
 
-  sendfile on;
-  tcp_nopush on;
-  ……
+    keepalive_timeout  60;
+    ... ...
 }
 ```
-- sendfile on：开启高效文件传输模式，sendfile指令指定nginx是否调用sendfile函数来输出文件，避免了内核缓冲区和用户缓冲区之间的数据拷贝( DMA 把硬盘数据拷贝到 kernel buffer)，对于普通应用设为 on，如果用来进行下载等应用磁盘IO重负载应用，可设置为off，以平衡磁盘与网络I/O处理速度，降低系统的负载。
+第一行的 sendfile 配置可以提高 Nginx 静态资源托管效率。sendfile 是一个系统调用，直接在内核空间完成文件发送，不需要先 read 再 write，没有上下文切换开销。
 
+TCP_NOPUSH 是 FreeBSD 的一个 socket 选项，对应 Linux 的 TCP_CORK，Nginx 里统一用 tcp_nopush 来控制它，并且只有在启用了 sendfile 之后才生效。启用它之后，数据包会累计到一定大小之后才会发送，减小了额外开销，提高网络效率。
 
-- tcp_nodelay on: 选项默认关闭。Nagle 算法规定，如果包的大小不满足MSS，并且还没收到之前发送的数据包的ack，那么这些小数据包会在发送端暂存起来，直到累积到一个MSS或者收到一个ACK为止。选项打开后则禁用 Nagle 算法。
+TCP_NODELAY 也是一个 socket 选项，启用后会禁用 Nagle 算法，尽快发送数据，某些情况下可以节约 200ms（Nagle 算法原理是：在发出去的数据还未被确认之前，新生成的小数据先存起来，凑满一个 MSS 或者等到收到确认后再发送）。Nginx 只会针对处于 keep-alive 状态的 TCP 连接才会启用 tcp_nodelay。
 
-- tcp_nopush on：在nginx中，tcp_nopush配置与tcp_nodelay不能同时打开。tcp_nopush 开启会设置TCP_CORK选项，结果就是数据包不会马上传送出去，这样有助于解决网络堵塞。发送时机：
+可以看到 TCP_NOPUSH 是要等数据包累积到一定大小才发送，TCP_NODELAY 是要尽快发送，二者相互矛盾。实际上，它们确实可以一起用，最终的效果是先填满包，再尽快发送。
 
-    1. 程序取消设置TCP_CORK这个选项
-    2. socket聚集的数据大于一个MSS的大小
-    3. 自从堵上塞子写入第一个字节开始，已经经过200ms
-    4. socket被关闭了
+配置最后一行用来指定服务端为每个 TCP 连接最多可以保持多长时间。Nginx 的默认值是 75 秒，有些浏览器最多只保持 60 秒，所以我统一设置为 60。
 
+5. gzip 压缩和调优
 
-5. 设置合理的连接超时时间
+6. 开启缓存
 
-6. gzip 压缩和调优
-
-7. 开启缓存
-
-8. 内核参数优化
+7. 内核参数优化
 
 
 ## 参考
 
 - [Nginx性能优化](https://www.cnblogs.com/cheyunhua/p/10670070.html)
 - [Nginx面试题](https://www.jianshu.com/p/cd4fafd4477a)
+- [本博客 Nginx 配置之性能篇](https://imququ.com/post/my-nginx-conf-for-wpo.html)
